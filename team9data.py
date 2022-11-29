@@ -8,7 +8,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns 
 
-import statsmodels as sm
+import statsmodels.api as sm
 
 # %%
 ## IMPORTING DATA
