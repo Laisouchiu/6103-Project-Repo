@@ -59,6 +59,7 @@ for col in data.columns:
     
 data = data.drop("easement", axis=1)
 # Decide how to fill the remaining columns
+
 #%%
 # data.year_built.isna()
 # data['age'] = 2022 - data['year_built']
@@ -71,6 +72,41 @@ data = data.drop("easement", axis=1)
 print(len(data[data['year_built']==0]))
 data = data[data['year_built']!=0]
 
+
+
+# %% EDA
+# Starting with sold homes - dropping those with " -  ", 0 or 10
+data_sold = data[data["sale_price"].str.contains(" -  ") == False]
+data_sold = data_sold[data_sold["sale_price"] != "0"]
+data_sold = data_sold[data_sold["sale_price"] != "10"]
+data_sold.shape
+
+# %%
+data_sold["sale_price"] = data_sold["sale_price"].astype(int)
+# %%
+data_borough = data_sold[["borough", "sale_price"]].groupby(["borough"]).mean()
+labels = data_borough.index.values
+values = data_borough['sale_price'].values
+data_borough
+# %%
+# DATA VISUALIZATION
+plt.bar(labels, values)
+# ax.set_xticklabels(("Manhattan", "Bronx", "Brooklyn", "Queens", "Staten Island"))
+plt.ylabel("Average Sale Price (Millions)")
+plt.xlabel("Borough")
+plt.title("Average Sale Price by Borough")
+plt.show()
+
+# %%
+plt.hist(data.sale_price, bins = 20, edgecolor = 'black')
+plt.xlabel("Price of House")
+plt.ylabel("Frequency")
+plt.title("Frequency of House Sale Prices")
+plt.show()
+# %%
+data_sqft = data_sold[data_sold["gross_square_feet"] != " -  "]
+sns.lmplot(x = "gross_square_feet", y = "sale_price", data = data_sqft)
+plt.show()
 
 # %%
 # MODEL BUILDING
