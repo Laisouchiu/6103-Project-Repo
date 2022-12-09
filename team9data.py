@@ -104,6 +104,7 @@ plt.xlabel("Price of House")
 plt.ylabel("Frequency")
 plt.title("Frequency of House Sale Prices")
 plt.show()
+
 # %%
 data_sqft = data_sold[data_sold["gross_square_feet"] != " -  "]
 sns.lmplot(x = "gross_square_feet", y = "sale_price", data = data_sqft)
