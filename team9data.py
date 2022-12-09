@@ -60,6 +60,17 @@ for col in data.columns:
 data = data.drop("easement", axis=1)
 # Decide how to fill the remaining columns
 
+# %% Tax Class at Present
+print(f"Value counts before fill:\n {data['tax_class_at_present'].value_counts()}")
+# Can fill in the missing values with the mode
+data.replace(" ", np.nan)
+
+data['tax_class_at_present'].fillna(data["tax_class_at_time_of_sale"], inplace = True)
+data['tax_class_at_present'].value_counts()
+# %% Building Class at Present
+print(f"Value coutns before fill: {data.building_class_at_present.value_counts}")
+
+
 #%%
 # data.year_built.isna()
 # data['age'] = 2022 - data['year_built']
@@ -68,7 +79,6 @@ data = data.drop("easement", axis=1)
 # data.insert(15, "age", column_move)
 
 # %%
-# DATA VISUALIZATION
 print(len(data[data['year_built']==0]))
 data = data[data['year_built']!=0]
 
