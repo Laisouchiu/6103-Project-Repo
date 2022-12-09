@@ -31,6 +31,10 @@ data["BOROUGH"].value_counts()
 # %%
 data["Unnamed: 0"].value_counts() # seems ambiguous
 data = data.drop("Unnamed: 0", axis=1)
+# %% fixing whitespace in columns
+newcols = ["borough", "neighborhood", "building_class_category", "tax_class_at_present", "block", "lot", "easement", "building_class_at_present", "address", "apartment_number", "zip_code", "residential_units", "commercial_units", "total_units", "land_square_feet", "gross_square_feet", "year_built", "tax_class_at_time_of_sale", "building_class_at_time_of_sale", "sale_price", "sale_date"]
+data.columns = newcols
+data.columns
 # %% [markdown]
 # There are missing values in the following variables:
 # * TAX CLASS AT PRESET
@@ -48,11 +52,13 @@ print("Number of na's in each column")
 for col in data.columns:
     na = data[data[col] == ' '].shape[0]
     na += data[data[col] == ' -  '].shape[0]
+    if data[col].dtype == str:
+        na += data[data[col].str.contains("-")].shape[0]
     # I think there are other indicators for missing values that we need to find
     print(f"{col}: {na}")
     
-data = data.drop("EASE-MENT", axis=1)
-# Decide how to fill the remaining three
+data = data.drop("easement", axis=1)
+# Decide how to fill the remaining columns
 # %%
 # DATA VISUALIZATION
 
