@@ -22,11 +22,6 @@ data.describe()
 data.nunique()
 
 # %%
-data['TAX CLASS AT PRESENT'].value_counts()
-# %%
-class_sale_count = data['BUILDING CLASS AT TIME OF SALE'].value_counts()
-class_sale_count
-# %%
 data["BOROUGH"].value_counts()
 # %%
 data["Unnamed: 0"].value_counts() # seems ambiguous
@@ -112,7 +107,9 @@ data_sold = data_sold[data_sold["sale_price"] != "10"]
 data_sold.shape
 
 # %%
-data_sold["sale_price"] = data_sold["sale_price"].astype(int)
+data_sold["sale_price"] = data_sold["sale_price"].astype(float)
+data_sold["sale_price"] = data_sold["sale_price"].astype(float)
+
 # %%
 data_borough = data_sold[["borough", "sale_price"]].groupby(["borough"]).mean()
 labels = data_borough.index.values
@@ -137,6 +134,18 @@ plt.show()
 data_sqft = data_sold[data_sold["gross_square_feet"] != " -  "]
 sns.lmplot(x = "gross_square_feet", y = "sale_price", data = data_sqft)
 plt.show()
+
+#%%
+# converting sale_date to datetime datatype
+data['sale_date'] = pd.to_datetime(data['sale_date'])
+
+# converting land_square_feet and gross_square_feet to float datatype
+data['land_square_feet'] = pd.to_numeric(data['land_square_feet'], errors='coerce')
+data['gross_square_feet'] = pd.to_numeric(data['gross_square_feet'], errors='coerce')
+
+#%%
+data = data.drop(['land_square_feet'], axis = 1)  # dropping land_square_feet 
+data = data.dropna(subset=['gross_square_feet'])  # dropping NA values rows from gross_square_feet column
 
 # %%
 # MODEL BUILDING
