@@ -60,18 +60,58 @@ for col in data.columns:
 data = data.drop("easement", axis=1)
 # Decide how to fill the remaining columns
 
+# %% Tax Class at Present
+print(f"Value counts before fill:\n {data['tax_class_at_present'].value_counts()}")
+# Can fill in the missing values with the mode
+data.replace(" ", np.nan)
+
+data['tax_class_at_present'].fillna(data["tax_class_at_time_of_sale"], inplace = True)
+data['tax_class_at_present'].value_counts()
+# %% Building Class at Present
+print(f"Value coutns before fill: {data.building_class_at_present.value_counts}")
+
+
 #%%
+# year_built = 0 is an outlier, so we will drop these values.
 print(len(data[data['year_built']==0]))
 data = data[data['year_built']!=0]
 data.year_built.isna()
+
+# instead of year_built column, changing it to age by subtracting it by 2022 and dropping year_built column
 data['age'] = 2022 - data['year_built']
 data = data.drop("year_built", axis = 1)
 column_move = data.pop("age")
 data.insert(15, "age", column_move)
 
-# %%
-# DATA VISUALIZATION
 
+#%%
+print(data.select_dtypes(['object']).columns)
+# Index(['neighborhood', 'building_class_category', 'tax_class_at_present',
+#        'building_class_at_present', 'address', 'apartment_number',
+#        'land_square_feet', 'gross_square_feet',
+#        'building_class_at_time_of_sale', 'sale_price', 'sale_date'],
+#       dtype='object')
+
+print(data.select_dtypes(['int64']).columns)
+# Index(['borough', 'block', 'lot', 'zip_code', 'residential_units',
+#        'commercial_units', 'total_units', 'age', 'tax_class_at_time_of_sale'],
+#       dtype='object')
+
+# converting few object type variables to category variable
+obj_to_category = ['building_class_category', 'tax_class_at_present', 'building_class_at_present', 'building_class_at_time_of_sale']
+
+for colname in obj_to_category:
+    data[colname] = data[colname].astype('category') 
+
+# converting few int type variables to category variable
+int_to_category = ['borough', 'tax_class_at_time_of_sale']
+
+for colname in int_to_category:
+    data[colname] = data[colname].astype('category')
+
+# %%
+print(len(data[data['year_built']==0]))
+data = data[data['year_built']!=0]
 
 
 
@@ -122,4 +162,13 @@ data["SALE_PRICE"] = data["SALE PRICE"]
 data_sold = data[data["SALE_PRICE"]!=' -  ']
 # modelPrice = ols(formula = "SALE_PRICE ~ BOROUGH", data=data) - not working
 # modelPrice.summary()
+# %%
+# sklearn
+from sklearn.linear_model import LinearRegression
+from sklearn.svm import SVR 
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
+from sklearn.model_selection import cross_val_score
+
 # %%
