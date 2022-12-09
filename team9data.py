@@ -72,11 +72,13 @@ print(f"Value coutns before fill: {data.building_class_at_present.value_counts}"
 
 
 #%%
-# data.year_built.isna()
-# data['age'] = 2022 - data['year_built']
-# data = data.drop("year_built", axis = 1)
-# column_move = data.pop("age")
-# data.insert(15, "age", column_move)
+print(len(data[data['year_built']==0]))
+data = data[data['year_built']!=0]
+data.year_built.isna()
+data['age'] = 2022 - data['year_built']
+data = data.drop("year_built", axis = 1)
+column_move = data.pop("age")
+data.insert(15, "age", column_move)
 
 # %%
 print(len(data[data['year_built']==0]))
