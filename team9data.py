@@ -24,8 +24,8 @@ data.nunique()
 # %%
 data["BOROUGH"].value_counts()
 # %%
-data["Unnamed: 0"].value_counts() # seems ambiguous
-data = data.drop("Unnamed: 0", axis=1)
+# data["Unnamed: 0"].value_counts() # seems ambiguous
+# data = data.drop("Unnamed: 0", axis=1)
 # %% fixing whitespace in columns
 newcols = ["borough", "neighborhood", "building_class_category", "tax_class_at_present", "block", "lot", "easement", "building_class_at_present", "address", "apartment_number", "zip_code", "residential_units", "commercial_units", "total_units", "land_square_feet", "gross_square_feet", "year_built", "tax_class_at_time_of_sale", "building_class_at_time_of_sale", "sale_price", "sale_date"]
 data.columns = newcols
@@ -120,6 +120,20 @@ data_borough = data_sold[["borough", "sale_price"]].groupby(["borough"]).mean()
 labels = data_borough.index.values
 values = data_borough['sale_price'].values
 data_borough
+
+#%%
+# converting sale_date to datetime datatype
+data['sale_date'] = pd.to_datetime(data['sale_date'])
+
+# converting land_square_feet and gross_square_feet to float datatype
+data['land_square_feet'] = pd.to_numeric(data['land_square_feet'], errors='coerce')
+data['gross_square_feet'] = pd.to_numeric(data['gross_square_feet'], errors='coerce')
+
+#%%
+data = data.drop(['land_square_feet'], axis = 1)  # dropping land_square_feet 
+data = data.dropna(subset=['gross_square_feet'])  # dropping NA values rows from gross_square_feet column
+
+
 # %%
 # DATA VISUALIZATION
 plt.bar(labels, values)
@@ -140,18 +154,6 @@ plt.show()
 data_sqft = data_sold[data_sold["gross_square_feet"] != " -  "]
 sns.lmplot(x = "gross_square_feet", y = "sale_price", data = data_sqft)
 plt.show()
-
-#%%
-# converting sale_date to datetime datatype
-data['sale_date'] = pd.to_datetime(data['sale_date'])
-
-# converting land_square_feet and gross_square_feet to float datatype
-data['land_square_feet'] = pd.to_numeric(data['land_square_feet'], errors='coerce')
-data['gross_square_feet'] = pd.to_numeric(data['gross_square_feet'], errors='coerce')
-
-#%%
-data = data.drop(['land_square_feet'], axis = 1)  # dropping land_square_feet 
-data = data.dropna(subset=['gross_square_feet'])  # dropping NA values rows from gross_square_feet column
 
 # %%
 # MODEL BUILDING
