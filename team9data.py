@@ -59,6 +59,21 @@ for col in data.columns:
     
 data = data.drop("easement", axis=1)
 # Decide how to fill the remaining columns
+
+#%%
+# data.year_built.isna()
+# data['age'] = 2022 - data['year_built']
+# data = data.drop("year_built", axis = 1)
+# column_move = data.pop("age")
+# data.insert(15, "age", column_move)
+
+# %%
+# DATA VISUALIZATION
+print(len(data[data['year_built']==0]))
+data = data[data['year_built']!=0]
+
+
+
 # %% EDA
 # Starting with sold homes - dropping those with " -  ", 0 or 10
 data_sold = data[data["sale_price"].str.contains(" -  ") == False]
@@ -92,6 +107,7 @@ plt.show()
 data_sqft = data_sold[data_sold["gross_square_feet"] != " -  "]
 sns.lmplot(x = "gross_square_feet", y = "sale_price", data = data_sqft)
 plt.show()
+
 # %%
 # MODEL BUILDING
 # Linear Regression
