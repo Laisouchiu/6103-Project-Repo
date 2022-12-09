@@ -61,16 +61,17 @@ data = data.drop("easement", axis=1)
 # Decide how to fill the remaining columns
 
 #%%
-# data.year_built.isna()
-# data['age'] = 2022 - data['year_built']
-# data = data.drop("year_built", axis = 1)
-# column_move = data.pop("age")
-# data.insert(15, "age", column_move)
+print(len(data[data['year_built']==0]))
+data = data[data['year_built']!=0]
+data.year_built.isna()
+data['age'] = 2022 - data['year_built']
+data = data.drop("year_built", axis = 1)
+column_move = data.pop("age")
+data.insert(15, "age", column_move)
 
 # %%
 # DATA VISUALIZATION
-print(len(data[data['year_built']==0]))
-data = data[data['year_built']!=0]
+
 
 
 
