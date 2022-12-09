@@ -133,3 +133,12 @@ data_sold = data[data["SALE_PRICE"]!=' -  ']
 # modelPrice = ols(formula = "SALE_PRICE ~ BOROUGH", data=data) - not working
 # modelPrice.summary()
 # %%
+# sklearn
+from sklearn.linear_model import LinearRegression
+from sklearn.svm import SVR 
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
+from sklearn.model_selection import cross_val_score
+
+# %%
