@@ -61,13 +61,42 @@ data = data.drop("easement", axis=1)
 # Decide how to fill the remaining columns
 
 #%%
+# year_built = 0 is an outlier, so we will drop these values.
 print(len(data[data['year_built']==0]))
 data = data[data['year_built']!=0]
 data.year_built.isna()
+
+# instead of year_built column, changing it to age by subtracting it by 2022 and dropping year_built column
 data['age'] = 2022 - data['year_built']
 data = data.drop("year_built", axis = 1)
 column_move = data.pop("age")
 data.insert(15, "age", column_move)
+
+
+#%%
+print(data.select_dtypes(['object']).columns)
+# Index(['neighborhood', 'building_class_category', 'tax_class_at_present',
+#        'building_class_at_present', 'address', 'apartment_number',
+#        'land_square_feet', 'gross_square_feet',
+#        'building_class_at_time_of_sale', 'sale_price', 'sale_date'],
+#       dtype='object')
+
+print(data.select_dtypes(['int64']).columns)
+# Index(['borough', 'block', 'lot', 'zip_code', 'residential_units',
+#        'commercial_units', 'total_units', 'age', 'tax_class_at_time_of_sale'],
+#       dtype='object')
+
+# converting few object type variables to category variable
+obj_to_category = ['building_class_category', 'tax_class_at_present', 'building_class_at_present', 'building_class_at_time_of_sale']
+
+for colname in obj_to_category:
+    data[colname] = data[colname].astype('category') 
+
+# converting few int type variables to category variable
+int_to_category = ['borough', 'tax_class_at_time_of_sale']
+
+for colname in int_to_category:
+    data[colname] = data[colname].astype('category')
 
 # %%
 # DATA VISUALIZATION
