@@ -117,7 +117,9 @@ int_to_category = ['borough', 'tax_class_at_time_of_sale']
 for colname in int_to_category:
     data[colname] = data[colname].astype('category')
 
-# %% EDA
+
+
+# %% Some subsettings
 # Starting with sold homes - dropping those with " -  ", 0 or 10
 data_sold = data[data["sale_price"].str.contains(" -  ") == False]
 data_sold = data_sold[data_sold["sale_price"] != "0"]
@@ -133,6 +135,13 @@ data_borough = data_sold[["borough", "sale_price"]].groupby(["borough"]).mean()
 labels = data_borough.index.values
 values = data_borough['sale_price'].values
 data_borough
+
+#%%
+data = data.dropna(subset=['sale_price'])  # dropping NA values rows from sale_price column
+data = data.drop(['building_class_at_present', 'tax_class_at_present'], axis = 1) 
+# data.isna().sum()
+
+
 # %%
 # DATA VISUALIZATION
 plt.bar(labels, values)
