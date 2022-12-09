@@ -104,12 +104,6 @@ int_to_category = ['borough', 'tax_class_at_time_of_sale']
 for colname in int_to_category:
     data[colname] = data[colname].astype('category')
 
-# %%
-print(len(data[data['year_built']==0]))
-data = data[data['year_built']!=0]
-
-
-
 # %% EDA
 # Starting with sold homes - dropping those with " -  ", 0 or 10
 data_sold = data[data["sale_price"].str.contains(" -  ") == False]
