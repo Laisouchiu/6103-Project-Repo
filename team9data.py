@@ -119,7 +119,7 @@ data_sold.shape
 
 # %%
 data_sold["sale_price"] = data_sold["sale_price"].astype(float)
-data_sold["sale_price"] = data_sold["sale_price"].astype(float)
+data["sale_price"] = data_sold["sale_price"].astype(float)
 
 # %%
 data_borough = data_sold[["borough", "sale_price"]].groupby(["borough"]).mean()
