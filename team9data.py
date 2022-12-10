@@ -137,7 +137,7 @@ values = data_borough['sale_price'].values
 data_borough
 
 #%%
-data = data.dropna(subset=['sale_price'])  # dropping NA values rows from sale_price column
+# data = data.dropna(subset=['sale_price'])  # dropping NA values rows from sale_price column
 data = data.drop(['building_class_at_present', 'tax_class_at_present'], axis = 1) 
 # data.isna().sum()
 
