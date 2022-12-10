@@ -185,7 +185,16 @@ data_sqft = data_sold[data_sold["gross_square_feet"] != " -  "]
 sns.lmplot(x = "gross_square_feet", y = "sale_price", data = data_sqft)
 plt.show()
 
-
+# %% [markdown]
+# Variables we will use in our model:
+# * borough
+# * building_class_category
+# * zip_codes
+# * total_units
+# * age
+# * tax_class_at_time_of_sale
+# * building_class_at_time_of_sale
+# * sale_price.
 # %%
 ############ MODEL BUILDING ############
 # Linear Regression
@@ -200,9 +209,65 @@ form = "SALE PRICE ~ BOROUGH + NEIGHBORHOOD + BUILDING CLASS CATEGORY + TAX CLAS
 # sklearn
 from sklearn.linear_model import LinearRegression
 from sklearn.svm import SVR 
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.tree import DecisionTreeRegressor
+from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
 from sklearn.model_selection import cross_val_score
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import OneHotEncoder
+from sklearn.compose import ColumnTransformer
+from sklearn.preprocessing import LabelEncoder
+# %%
+data_sold_features = data_sold[["borough", "building_class_category", "zip_code", "total_units", "age", "tax_class_at_time_of_sale", "building_class_at_time_of_sale", "sale_price"]]
 
+cats = ["building_class_category", "tax_class_at_time_of_sale", "building_class_at_time_of_sale"]
+
+for cat in cats:
+    labelendoder = LabelEncoder()
+    data_sold_features[cat] = labelendoder.fit_transform(data_sold_features[cat])
+
+data_sold_features.head()
+# %%
+## ONE HOT ENCODER NOT WORKING - Try to troubleshoot later, will use label encoder instead
+dataPreprocessor = ColumnTransformer(
+    [
+        ("categorical", OneHotEncoder(), ["building_class_category"
+                                          , "tax_class_at_time_of_sale", "building_class_at_time_of_sale"
+                                          ])
+    ], verbose_feature_names_out=False, remainder="passthrough",
+).fit(data_sold_features)
+
+dataPreprocessor.get_feature_names_out()
+
+data_transformed = pd.DataFrame(dataPreprocessor.fit_transform(data_sold_features),    
+                                columns=dataPreprocessor.fit(data_sold_features).get_feature_names_out()
+                                )
+
+data_transformed.head()
+# %%
+X = data_sold_features.drop(["sale_price"], axis=1)
+y = data_sold_features['sale_price']
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.20, random_state=55)
+
+print(X_train.shape)
+print(X_test.shape)
+print(y_train.shape)
+print(y_test.shape)
+# %% Linear Regression
+lr = LinearRegression()
+lr.fit(X_train, y_train)
+print(lr.score(X_train, y_train))
+lr.score(X_test, y_test)
+# %% SVR
+
+# %% Decision Tree
+dt = DecisionTreeRegressor()
+dt.fit(X_train, y_train)
+dt.score(X_test, y_test)
+# %% Random Forest
+rf = RandomForestRegressor(random_state=10)
+rf.fit(X_train, y_train)
+print(rf.score(X_train, y_train))
+rf.score(X_test, y_test)
 # %%
