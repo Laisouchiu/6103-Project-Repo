@@ -91,6 +91,19 @@ data = data.drop("year_built", axis = 1)
 column_move = data.pop("age")
 data.insert(15, "age", column_move)
 
+#%%
+# converting sale_date to datetime datatype
+data['sale_date'] = pd.to_datetime(data['sale_date'])
+
+# converting land_square_feet and gross_square_feet to float datatype
+data['land_square_feet'] = pd.to_numeric(data['land_square_feet'], errors='coerce')
+data['gross_square_feet'] = pd.to_numeric(data['gross_square_feet'], errors='coerce')
+
+#%%
+data = data.drop(['land_square_feet'], axis = 1)  # dropping land_square_feet 
+data = data.dropna(subset=['gross_square_feet'])  # dropping NA values rows from gross_square_feet column
+
+
 
 #%%
 print(data.select_dtypes(['object']).columns)
@@ -117,9 +130,6 @@ int_to_category = ['borough', 'tax_class_at_time_of_sale']
 for colname in int_to_category:
     data[colname] = data[colname].astype('category')
 
-# %%
-print(len(data[data['year_built']==0]))
-data = data[data['year_built']!=0]
 
 # %%
 ############ EXPLORATORY DATA ANALYSIS ############
@@ -135,7 +145,9 @@ data_sold["sale_price"] = data_sold["sale_price"].astype(float)
 # %%
 # Creating Price per Square Foot
 # try:
-#     data_sold["price_per_sqft"] = data_sold["sale_price"] / data["gross_square_feet"].astype(int)
+#     data_sold["price_per_sqft"] = data_sold["sale_price"] / data["gross_square_feet"].astype(float)
+data["sale_price"] = data_sold["sale_price"].astype(float)
+
 # except:
 #     data_sold["price_per_sqft"] = None
 # %%
@@ -143,6 +155,13 @@ data_borough = data_sold[["borough", "sale_price"]].groupby(["borough"]).mean()
 labels = data_borough.index.values
 values = data_borough['sale_price'].values
 data_borough
+
+#%%
+data = data.dropna(subset=['sale_price'])  # dropping NA values rows from sale_price column
+data = data.drop(['building_class_at_present', 'tax_class_at_present'], axis = 1) 
+# data.isna().sum()
+
+
 # %%
 ############ DATA VISUALIZATION ############
 plt.bar(labels, values)
@@ -165,6 +184,7 @@ plt.show()
 data_sqft = data_sold[data_sold["gross_square_feet"] != " -  "]
 sns.lmplot(x = "gross_square_feet", y = "sale_price", data = data_sqft)
 plt.show()
+
 
 # %%
 ############ MODEL BUILDING ############
