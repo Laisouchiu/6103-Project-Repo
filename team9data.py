@@ -91,6 +91,8 @@ data = data.drop("year_built", axis = 1)
 column_move = data.pop("age")
 data.insert(15, "age", column_move)
 
+# One of the buildings is 911 years old, needs to be dropped
+data = data.drop(957, axis = 0)
 #%%
 # converting sale_date to datetime datatype
 data['sale_date'] = pd.to_datetime(data['sale_date'])
@@ -100,8 +102,8 @@ data['land_square_feet'] = pd.to_numeric(data['land_square_feet'], errors='coerc
 data['gross_square_feet'] = pd.to_numeric(data['gross_square_feet'], errors='coerce')
 
 #%%
-data = data.drop(['land_square_feet'], axis = 1)  # dropping land_square_feet 
-data = data.dropna(subset=['gross_square_feet'])  # dropping NA values rows from gross_square_feet column
+# data = data.drop(['land_square_feet'], axis = 1)  # dropping land_square_feet 
+# data = data.dropna(subset=['gross_square_feet'])  # dropping NA values rows from gross_square_feet column
 
 
 
@@ -151,6 +153,8 @@ data["sale_price"] = data_sold["sale_price"].astype(float)
 # except:
 #     data_sold["price_per_sqft"] = None
 # %%
+borough_map = {1: "Manhattan", 2: "Bronx", 3: "Brooklyn", 4: "Queens", 5:"Staten Island"}
+data_sold["borough"] = data_sold.borough.map(borough_map)
 data_borough = data_sold[["borough", "sale_price"]].groupby(["borough"]).mean()
 labels = data_borough.index.values
 values = data_borough['sale_price'].values
@@ -172,19 +176,53 @@ plt.title("Average Sale Price by Borough")
 plt.show()
 
 # %%
-plt.hist(data_sold.sale_price, bins = 30, edgecolor = 'black')
+# Only plotting values less than $10 million due to significant outliers (eg. 2.2 BILLION dollars lol)
+plt.hist(data_sold.loc[data_sold["sale_price"] <= 10000000]["sale_price"], bins = 30, edgecolor = 'black')
 plt.xlabel("Price of House")
-plt.xlim(right=1000000)
-plt.xlim(left=0)
 plt.ylabel("Frequency")
-plt.title("Frequency of House Sale Prices")
+plt.title("Histogram of House Sale Prices")
 plt.show()
 
 # %%
-data_sqft = data_sold[data_sold["gross_square_feet"] != " -  "]
-sns.lmplot(x = "gross_square_feet", y = "sale_price", data = data_sqft)
+sns.violinplot(x = "borough", y = "sale_price", data = data_sold.loc[data_sold["sale_price"] <= 10000000])
+plt.title("Distribution of Sale Price by Borough")
+plt.xlabel("Borough")
+plt.ylabel("Sale Price")
 plt.show()
-
+# %%
+# Plotting Square Footage for < 10k and those not equal to zero
+data_sold_gross = data_sold.loc[data_sold["gross_square_feet"] < 10000]
+data_sold_gross = data_sold_gross.loc[data_sold["gross_square_feet"] != 0]
+plt.hist(data_sold_gross["gross_square_feet"], bins = 30, edgecolor = "black")
+plt.xlabel("Gross Square Feet")
+plt.ylabel("Frequency")
+plt.title("Histogram of Gross Square Footage")
+plt.show()
+# %%
+# Square Footage and Sale Price
+data_sold_gross = data_sold_gross.loc[data_sold_gross["sale_price"] <= 20000000]
+sns.lmplot(x = "gross_square_feet", y = "sale_price", data = data_sold_gross, scatter_kws={"alpha": 0.2}, line_kws={'color': 'red'})
+plt.title("Square Footage versus Sale Price")
+plt.xlabel("Square Fottage")
+plt.ylabel("Sale Price")
+plt.show()
+# %%,
+sns.lmplot(x = "age", y = "sale_price", data = data_sold.loc[data_sold["sale_price"] <= 10000000], scatter_kws={'alpha': 0.2}, line_kws={'color': 'red'})
+plt.title("Age versus Sale Price")
+plt.xlabel("Age (years)")
+plt.ylabel("Sale Price")
+plt.show()
+# %%
+tax_class = data_sold[["sale_price", "tax_class_at_time_of_sale"]].groupby(["tax_class_at_time_of_sale"]).mean()
+labels = tax_class.index.values.astype(str)
+values = tax_class.sale_price.values
+tax_class
+# %% # Tax class = clearly a big predictor
+plt.bar(labels, values)
+plt.title("Sale Price by Tax Class")
+plt.xlabel("Tax Class")
+plt.ylabel("Sale Price")
+plt.show()
 # %% [markdown]
 # Variables we will use in our model:
 # * borough
@@ -215,6 +253,7 @@ from sklearn.metrics import accuracy_score, confusion_matrix, classification_rep
 from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import OneHotEncoder
+from sklearn.preprocessing import StandardScaler
 from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import LabelEncoder
 # %%
@@ -229,6 +268,7 @@ for cat in cats:
 data_sold_features.head()
 # %%
 ## ONE HOT ENCODER NOT WORKING - Try to troubleshoot later, will use label encoder instead
+data_sold_features = data_sold[["borough", "building_class_category", "zip_code", "total_units", "age", "tax_class_at_time_of_sale", "building_class_at_time_of_sale", "sale_price"]]
 dataPreprocessor = ColumnTransformer(
     [
         ("categorical", OneHotEncoder(), ["building_class_category"
@@ -264,6 +304,7 @@ lr.score(X_test, y_test)
 # %% Decision Tree
 dt = DecisionTreeRegressor()
 dt.fit(X_train, y_train)
+print(dt.score(X_train, y_train))
 dt.score(X_test, y_test)
 # %% Random Forest
 rf = RandomForestRegressor(random_state=10)
