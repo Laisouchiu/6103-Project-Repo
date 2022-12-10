@@ -261,32 +261,33 @@ data_sold_features = data_sold[["borough", "building_class_category", "zip_code"
 
 cats = ["building_class_category", "tax_class_at_time_of_sale", "building_class_at_time_of_sale"]
 
-for cat in cats:
-    labelendoder = LabelEncoder()
-    data_sold_features[cat] = labelendoder.fit_transform(data_sold_features[cat])
+# for cat in cats:
+#     labelendoder = LabelEncoder()
+#     data_sold_features[cat] = labelendoder.fit_transform(data_sold_features[cat])
 
-data_sold_features.head()
+# data_sold_features.head()
 # %%
 ## ONE HOT ENCODER NOT WORKING - Try to troubleshoot later, will use label encoder instead
-data_sold_features = data_sold[["borough", "building_class_category", "zip_code", "total_units", "age", "tax_class_at_time_of_sale", "building_class_at_time_of_sale", "sale_price"]]
-dataPreprocessor = ColumnTransformer(
-    [
-        ("categorical", OneHotEncoder(), ["building_class_category"
-                                          , "tax_class_at_time_of_sale", "building_class_at_time_of_sale"
-                                          ])
-    ], verbose_feature_names_out=False, remainder="passthrough",
-).fit(data_sold_features)
 
-dataPreprocessor.get_feature_names_out()
-
-data_transformed = pd.DataFrame(dataPreprocessor.fit_transform(data_sold_features),    
-                                columns=dataPreprocessor.fit(data_sold_features).get_feature_names_out()
-                                )
-
-data_transformed.head()
 # %%
-X = data_sold_features.drop(["sale_price"], axis=1)
-y = data_sold_features['sale_price']
+data_sold_features = data_sold[["borough", "building_class_category", "zip_code", "total_units", "age", "tax_class_at_time_of_sale", "building_class_at_time_of_sale", "sale_price"]]
+dataPreprocessor = ColumnTransformer( transformers=
+    [
+        ("categorical", OneHotEncoder(), ["building_class_category", "tax_class_at_time_of_sale", 
+                                          "building_class_at_time_of_sale", "borough", "zip_code"
+                                          ]),
+        ("numeric", StandardScaler(), ["total_units", "age", "sale_price"])
+    ], verbose_feature_names_out=False, remainder="passthrough",
+)
+
+data_sold_features_newmatrix = dataPreprocessor.fit_transform(data_sold_features)
+newcolnames = dataPreprocessor.get_feature_names_out()
+data_sold_features_new = pd.DataFrame( data_sold_features_newmatrix.toarray(), columns= newcolnames )
+print(data_sold_features_new.shape)
+print(data_sold_features_new.head())
+# %%
+X = data_sold_features_new.drop(["sale_price"], axis=1)
+y = data_sold_features_new['sale_price']
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.20, random_state=55)
 
@@ -311,4 +312,6 @@ rf = RandomForestRegressor(random_state=10)
 rf.fit(X_train, y_train)
 print(rf.score(X_train, y_train))
 rf.score(X_test, y_test)
+# %%
+classification_report(y_test, lr.predict(X_test))
 # %%
