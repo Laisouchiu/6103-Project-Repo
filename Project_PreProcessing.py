@@ -11,7 +11,7 @@ from sklearn.preprocessing import OneHotEncoder
 from sklearn.preprocessing import StandardScaler
 from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import LabelEncoder
-
+from sklearn.model_selection import train_test_split
 import statsmodels.api as sm
 # %%
 ############ IMPORTING DATA ############
@@ -102,7 +102,7 @@ clean_df = clean_df.loc[clean_df["sale_price"] > 10]
 clean_df.shape
 # %%
 # Plot Sales Price After Outliers Removed
-plt.hist()
+#plt.hist()
 
 # %%
 # Correlation Matrix
