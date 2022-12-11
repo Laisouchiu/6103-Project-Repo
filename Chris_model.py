@@ -203,19 +203,36 @@ from statsmodels.formula.api import ols
 from statsmodels.stats.outliers_influence import variance_inflation_factor
 
 #%%
+### Train/Test-Split
+lm_X = clean_df.drop(["sale_price"], axis=1)
+lm_Y = clean_df['sale_price']
 
-X_train1, X_test1, y_train1, y_test1 = train_test_split(xpizza, ypizza, test_size = 0.250, random_state=333)
+lm_X_train, lm_X_test, lm_Y_train, lm_Y_test = train_test_split(lm_X, lm_Y, test_size = 0.250, random_state=333)
+
+## Training Dataframe
+lm_train = lm_X_train 
+lm_train['sale_price'] = lm_Y_train
 
 # %%
-lm_model = ols(formula=' sale_price ~ C(borough) + C(building_class_category) + C(zip_code) + total_units + percent_residential_units + age + gross_square_feet + C(tax_class_at_time_of_sale) + C(building_class_at_time_of_sale)', data=clean_df)
+### Training model building
+lm_model = ols(formula=' sale_price ~ C(borough) + C(building_class_category) + C(zip_code) + total_units + percent_residential_units + age + gross_square_feet + C(tax_class_at_time_of_sale) + C(building_class_at_time_of_sale)', data=lm_train)
 lm_model_fit = lm_model.fit()
-
-
 print(lm_model_fit.summary())
+
+#%%
+### Use the model in testing set
+modelpredicitons = pd.DataFrame( columns=['gre_GpaLM'], data= modelGreGpaFit.predict(dfadmit.gpa)) 
+
+
 
 # %%
 ########### VIFs Checking  ############
 
+##### Normally bell shaped ######
+sns.histplot(data=clean_df, x='sale_price')
+# 
+
+##### VIFs Checkings #####
 X = dfadmit[['gpa', 'rank']]
 X['Intercept'] = 1
 
