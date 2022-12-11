@@ -235,13 +235,15 @@ print(PredictedPrice_vs_ActualPrice.head())
 sns.histplot(data=clean_df, x='sale_price')
 # 
 
+#%%
 ##### VIFs Checkings #####
-X = dfadmit[['gpa', 'rank']]
-X['Intercept'] = 1
+X = clean_df[['borough', 'building_class_category', 'zip_code', 'total_units', 'percent_residential_units', 'age', 'gross_square_feet', 'tax_class_at_time_of_sale', 'building_class_at_time_of_sale']]
 
-# # Compute and view VIF
-vif = pd.DataFrame()
-vif["variables"] = X.columns
-vif["VIF"] = [ variance_inflation_factor(X.values, i) for i in range(X.shape[1]) ] # list comprehension
+vifs = pd.DataFrame()
+vifs["features"] = X.columns
+vifs["VIF"] = [ variance_inflation_factor(X.values, i) 
+               for i in range(len(X.columns)) ]
 
-print(vif)
+print(vifs)
+
+# %%
