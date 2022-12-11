@@ -73,8 +73,7 @@ data_few_cols = data_few_cols.drop(['year_built'], axis =1)
 # %%
 data_few_cols = data_few_cols[data_few_cols["land_square_feet"] != 0]
 data_few_cols = data_few_cols[data_few_cols["gross_square_feet"] != 0]
-#%%
-#%% 
+# %%
 ############ DETECTING OUTLIERS ############
 outliers_indexes = []
 def outliers (df, ft):
@@ -98,15 +97,51 @@ def outliers_remove(df, list):
     df_clean = df.drop(list)
     return df_clean
 
-data_few_cols = outliers_remove(data_few_cols, outliers_indexes)
+clean_df = outliers_remove(data_few_cols, outliers_indexes)
+clean_df = clean_df.loc[clean_df["sale_price"] > 10]
+clean_df.shape
 # %%
-data_sold_features = data_few_cols[["borough", "building_class_category", "zip_code", "total_units", "age", "tax_class_at_time_of_sale", "building_class_at_time_of_sale", "sale_price", "gross_square_feet", "land_square_feet", "percent_resdiential_units"]]
+# Plot Sales Price After Outliers Removed
+plt.hist()
+
+# %%
+# Correlation Matrix
+clean_df.corr()
+# %% [markdown]
+# Variables we will use in our model:
+# * borough
+# * building_class_category
+# * zip_codes
+# * total_units
+# * percent_residential_units
+# * age
+# * gross_square_feet
+# * tax_class_at_time_of_sale
+# * building_class_at_time_of_sale
+# * sale_price.
+# 
+# Variables to consider:
+# * percent_residential_units
+# * price per square foot
+# * sale date ??.
+# %%
+############ MODEL BUILDING ############
+# Linear Regression
+from statsmodels.formula.api import ols
+
+form = "sale_price ~ C(borough) + C(building_class_category) + C(zip_code) + total_units + percent_residential_units + age + gross_square_feet + C(tax_class_at_time_of_sale) + C(building_class_at_time_of_sale)"
+
+modelPrice = ols(formula=form, data=clean_df).fit()
+modelPrice.summary()
+
+# %%
+data_sold_features = data_few_cols[["borough", "building_class_category", "zip_code", "total_units", "percent_residential_units", "age", "gross_square_feet", "tax_class_at_time_of_sale", "building_class_at_time_of_sale", "sale_price"]]
 dataPreprocessor = ColumnTransformer( transformers=
     [
         ("categorical", OneHotEncoder(), ["building_class_category", "tax_class_at_time_of_sale", 
                                           "building_class_at_time_of_sale", "borough", "zip_code"
-                                          ]),
-        ("numeric", StandardScaler(), ["total_units", "age", "sale_price", "gross_square_feet", "land_square_feet", "percent_residential_units"])
+                                          ])
+        #("numeric", StandardScaler(), ["total_units", "age", "sale_price", "gross_square_feet", "percent_residential_units"])
     ], verbose_feature_names_out=False, remainder="passthrough",
 )
 
@@ -126,3 +161,72 @@ print(X_train.shape)
 print(X_test.shape)
 print(y_train.shape)
 print(y_test.shape)
+# %%
+# %%
+# sklearn
+from sklearn.linear_model import LinearRegression
+from sklearn.tree import DecisionTreeRegressor
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.model_selection import cross_val_score
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import OneHotEncoder
+from sklearn.preprocessing import StandardScaler
+from sklearn.compose import ColumnTransformer
+from sklearn.metrics import mean_squared_error
+from sklearn.metrics import mean_absolute_error
+
+# %% Linear Regression
+lr = LinearRegression()
+lr.fit(X_train, y_train)
+# R-squared
+print(f"Training R-Squared: {lr.score(X_train, y_train)}")
+print(f"Testing R_squared {lr.score(X_test, y_test)}")
+# Mean Squared Error
+print(f"Training MSE: {mean_squared_error(y_train, lr.predict(X_train))}")
+print(f"Testing MSE: {mean_squared_error(y_test, lr.predict(X_test))}")
+# Mean Absolute Error
+print(f"Training MAE: {mean_absolute_error(y_train, lr.predict(X_train))}")
+print(f"Testing MAE: {mean_absolute_error(y_test, lr.predict(X_test))}")
+# %% Decision Tree
+dt = DecisionTreeRegressor(max_depth=10, min_samples_split=10)
+dt.fit(X_train, y_train)
+# R-squared
+print(f"Training R-Squared: {dt.score(X_train, y_train)}")
+print(f"Testing R_squared {dt.score(X_test, y_test)}")
+# Mean Squared Error
+print(f"Training MSE: {mean_squared_error(y_train, dt.predict(X_train))}")
+print(f"Testing MSE: {mean_squared_error(y_test, dt.predict(X_test))}")
+# Mean Absolute Error
+print(f"Training MAE: {mean_absolute_error(y_train, dt.predict(X_train))}")
+print(f"Testing MAE: {mean_absolute_error(y_test, dt.predict(X_test))}")
+# %%
+train = []
+test = []
+depths = list(range(10,101,10))
+for depth in depths:
+    dt = DecisionTreeRegressor(max_depth=10, min_samples_leaf=1, min_samples_split=depth)
+    dt.fit(X_train, y_train)
+    train.append(dt.score(X_train, y_train))
+    test.append(dt.score(X_test, y_test))
+    
+plt.plot(depths, train, c = "blue")
+plt.plot(depths, test, c = "red")
+plt.title("Accuracies at Different Tree Depths")
+plt.xlabel("Max Depth")
+plt.ylabel("R-Squared")
+plt.show()
+# %% Random Forest
+rf = RandomForestRegressor(max_depth=10, min_samples_split=10, random_state=10)
+rf.fit(X_train, y_train)
+# R-squared
+print(f"Training R-Squared: {rf.score(X_train, y_train)}")
+print(f"Testing R_squared {rf.score(X_test, y_test)}")
+# Mean Squared Error
+print(f"Training MSE: {mean_squared_error(y_train, rf.predict(X_train))}")
+print(f"Testing MSE: {mean_squared_error(y_test, rf.predict(X_test))}")
+# Mean Absolute Error
+print(f"Training MAE: {mean_absolute_error(y_train, rf.predict(X_train))}")
+print(f"Testing MAE: {mean_absolute_error(y_test, rf.predict(X_test))}")
+# %%
+
+# %%
