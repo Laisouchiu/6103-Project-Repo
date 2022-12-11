@@ -83,27 +83,18 @@ data_sold_features_new = pd.DataFrame( data_sold_features_newmatrix.toarray(), c
 print(data_sold_features_new.shape)
 print(data_sold_features_new.head())
 
+
+
 #%%
-#%% Removing outliers
-outliers_indexes = []
-def outliers (df, ft):
-    q1=df[ft].quantile(0.25)
-    q3=df[ft].quantile(0.75)
-    iqr=q3-q1
-    
-    lower_bound=q1-1.5*iqr
-    upper_bound=q3+1.5*iqr
-    
-    outliers=df.index[ (df[ft]<lower_bound) | (df[ft]>upper_bound)]
-    return outliers
+from sklearn.model_selection import train_test_split
+data_sold_clean = outliers_remove(data_few_cols, outliers_indexes)
 
-outliers_indexes.extend(outliers(data_sold, 'sale_price'))
-print('Number of outliers:', len(outliers_indexes))
+X = data_sold_features_new.drop(["sale_price"], axis=1)
+y = data_sold_features_new['sale_price']
 
-# Removing outliers
-def outliers_remove(df, list):
-    list = sorted(set(list)) 
-    df_clean = df.drop(list)
-    return df_clean
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.20, random_state=55)
 
-data_sold_clean = outliers_remove(data_sold, outliers_indexes)
+print(X_train.shape)
+print(X_test.shape)
+print(y_train.shape)
+print(y_test.shape)

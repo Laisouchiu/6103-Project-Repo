@@ -12,6 +12,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import LabelEncoder
 
+
 # %%
 # sklearn
 from sklearn.linear_model import LinearRegression
@@ -24,6 +25,8 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.compose import ColumnTransformer
 from sklearn.metrics import mean_squared_error
 from sklearn.metrics import mean_absolute_error
+
+from sklearn.model_selection import train_test_split
 
 import statsmodels.api as sm
 # %%
