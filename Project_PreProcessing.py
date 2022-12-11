@@ -102,11 +102,17 @@ clean_df = clean_df.loc[clean_df["sale_price"] > 10]
 clean_df.shape
 # %%
 # Plot Sales Price After Outliers Removed
-plt.hist()
-
+plt.hist(clean_df.sale_price, bins = 30, edgecolor = "black")
+plt.title("Histogram of Sale Prices")
+plt.xlabel("Sale Price (Millions)")
+plt.ylabel("Frequency")
+plt.show()
 # %%
 # Correlation Matrix
-clean_df.corr()
+corr = clean_df.corr()
+ax = sns.heatmap(corr, cmap = 'Blues')
+plt.title("Correlation Matrix")
+plt.show()
 # %% [markdown]
 # Variables we will use in our model:
 # * borough
@@ -121,7 +127,6 @@ clean_df.corr()
 # * sale_price.
 # 
 # Variables to consider:
-# * percent_residential_units
 # * price per square foot
 # * sale date ??.
 # %%
@@ -204,7 +209,7 @@ train = []
 test = []
 depths = list(range(10,101,10))
 for depth in depths:
-    dt = DecisionTreeRegressor(max_depth=10, min_samples_leaf=1, min_samples_split=depth)
+    dt = DecisionTreeRegressor(max_depth=depth, min_samples_leaf=1)
     dt.fit(X_train, y_train)
     train.append(dt.score(X_train, y_train))
     test.append(dt.score(X_test, y_test))
@@ -230,3 +235,4 @@ print(f"Testing MAE: {mean_absolute_error(y_test, rf.predict(X_test))}")
 # %%
 
 # %%
+# Cross Validation Of Random Forest
