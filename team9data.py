@@ -265,11 +265,10 @@ plt.show()
 # Linear Regression
 from statsmodels.formula.api import ols
 
-form = "SALE PRICE ~ BOROUGH + NEIGHBORHOOD + BUILDING CLASS CATEGORY + TAX CLASS AT PRESENT + BLOCK + LOT + BUILDING CLASS AT PRESENT + ZIP CODE + RESIDENTIAL UNITS + COMMERCIAL UNITS"
-# modelPrice = ols(formula=form, data=data) # Syntax error
+form = "sale_price ~ C(borough) + C(building_class_category) + C(zip_code) + total_units + age + C(tax_class_at_time_of_sale) + C(building_class_at_time_of_sale)"
 
-# modelPrice = ols(formula = "SALE_PRICE ~ BOROUGH", data=data) - not working
-# modelPrice.summary()
+modelPrice = ols(formula=form, data=data_sold).fit()
+modelPrice.summary()
 # %%
 # sklearn
 from sklearn.linear_model import LinearRegression
