@@ -47,6 +47,10 @@ fillValues = data[['land_square_feet','gross_square_feet']]
 len(fillValues[(fillValues['land_square_feet'].isnull()) & (fillValues['gross_square_feet'].notnull())])
 # %%
 fillValues.dropna(inplace = True)
+
+#%%
+print(len(fillValues[(fillValues['land_square_feet'].isnull()) & (fillValues['gross_square_feet'].notnull())]))
+print(len(fillValues[(fillValues['land_square_feet'].notnull()) & (fillValues['gross_square_feet'].isnull())]))
 # %%
 from sklearn.linear_model import LinearRegression
 
@@ -85,6 +89,8 @@ data = data[data['sale_price']>0]
 data = data[data["sale_price"].notnull()] 
 # %%
 data = data.drop(['apartment_number'], axis=1)
+
+
 # %%
 # Removing data where commercial + residential doesn't equal total units
 data = data[data['total_units'] == data['commercial_units'] + data['residential_units']]
@@ -144,4 +150,58 @@ sns.boxplot(x='borough', y='sale_price', data=df2, palette='rainbow')
 sns.barplot(x='borough', y='land_square_feet', data=data)
 # %%
 sns.barplot(x='borough', y='gross_square_feet', data=data)
+# %%
+# Creating dummy variables from categorical variables
+data2 = data.drop(['tax_class_at_present', 'building_class_at_present', 'residential_units', 'commercial_units'], axis = 1)
+data_one_hot = pd.get_dummies(data2, prefix_sep = "_" , drop_first = True)
+# %%
+from sklearn.model_selection import train_test_split
+
+
+X = data_one_hot.drop(["sale_price", "sale_date"],axis = 1)
+y = data_one_hot["sale_price"].astype(float)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state = 42)
+# %%
+from sklearn.linear_model import LinearRegression
+from sklearn.svm import SVR 
+from sklearn.tree import DecisionTreeRegressor
+from sklearn.ensemble import RandomForestRegressor
+
+lr = LinearRegression()
+lr.fit(X_train, y_train)
+print(lr.score(X_train, y_train))
+lr.score(X_test, y_test)    
+# %% Decision Tree
+dt = DecisionTreeRegressor()
+dt.fit(X_train, y_train)
+print(dt.score(X_train, y_train))
+dt.score(X_test, y_test)
+# %% Random Forest
+rf = RandomForestRegressor(random_state=10)
+rf.fit(X_train, y_train)
+print(rf.score(X_train, y_train))
+rf.score(X_test, y_test)
+# %%
+from sklearn.model_selection import GridSearchCV
+param_grid = {
+    "n_estimators":[100,200,300],
+    "max_depth":[10, 50, 100],
+    "max_features":[6,8,10,12,14,16]
+}
+
+rf = RandomForestRegressor(random_state = 10)
+
+rf_tuned = GridSearchCV(estimator = rf,
+                            param_grid = param_grid,
+                            cv = 2,
+                            n_jobs=-1,
+                        verbose=0)
+
+rf_tuned.fit(X_train, y_train)
+rf_tuned.best_estimator_
+# %%
+model = rf_tuned.best_estimator_.fit(X_train,y_train)
+# %%
+print("Training score:",model.score(X_train, y_train))
+print("Testing score:",model.score(X_test, y_test))
 # %%
