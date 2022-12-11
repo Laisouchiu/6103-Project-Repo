@@ -220,24 +220,26 @@ lm_model_fit = lm_model.fit()
 print(lm_model_fit.summary())
 
 #%%
-### Use the model in testing set
-PredictedPrice_vs_ActualPrice = pd.DataFrame( columns=['Predicted'], data = lm_model_fit.predict(lm_test_X)) 
-PredictedPrice_vs_ActualPrice['Actual'] = lm_Y_test
-#print(lm_test_X.shape)
-#print(predicitons.shape)
-print(PredictedPrice_vs_ActualPrice.head())
 
+lm_infl = lm_model_fit.get_influence()
+print(lm_infl.summary_table())
 
 # %%
-########### VIFs Checking  ############
+########### Model Assumptions  ############
 
 ##### Normally bell shaped ######
 sns.histplot(data=clean_df, x='sale_price')
-# 
+
+##### Linearity Checkings #####
+sns.lmplot(x = "total_units", y = "sale_price", data = clean_df)
+#plt.ylim((0, 10000000))
+plt.show()
 
 #%%
 ##### VIFs Checkings #####
-X = clean_df[['borough', 'building_class_category', 'zip_code', 'total_units', 'percent_residential_units', 'age', 'gross_square_feet', 'tax_class_at_time_of_sale', 'building_class_at_time_of_sale']]
+X = clean_df[['borough', 'building_class_category', 'zip_code', 'total_units', 
+              'percent_residential_units', 'age', 'gross_square_feet', 
+              'tax_class_at_time_of_sale', 'building_class_at_time_of_sale']]
 
 vifs = pd.DataFrame()
 vifs["features"] = X.columns
@@ -245,5 +247,10 @@ vifs["VIF"] = [ variance_inflation_factor(X.values, i)
                for i in range(len(X.columns)) ]
 
 print(vifs)
-
-# %%
+#%%
+### Use the model in testing set
+PredictedPrice_vs_ActualPrice = pd.DataFrame( columns=['Predicted'], data = lm_model_fit.predict(lm_test_X)) 
+PredictedPrice_vs_ActualPrice['Actual'] = lm_Y_test
+#print(lm_test_X.shape)
+#print(predicitons.shape)
+print(PredictedPrice_vs_ActualPrice.head())
