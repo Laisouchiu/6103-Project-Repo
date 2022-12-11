@@ -132,7 +132,14 @@ int_to_category = ['borough', 'tax_class_at_time_of_sale']
 for colname in int_to_category:
     data[colname] = data[colname].astype('category')
 
-
+# %%
+# Creating Percent Reseidential Variable
+data["percent_residential_units"] = data["residential_units"] / data["total_units"]
+# Three lines are greater than one - not possible is likely due to discrepencies in the data so we can drop those
+data= data.loc[data["percent_residential_units"] != 6]
+data= data.loc[data["percent_residential_units"] != 2]
+data= data.loc[data["percent_residential_units"] != 1.5]
+data['percent_residential_units'].value_counts()
 # %%
 ############ EXPLORATORY DATA ANALYSIS ############
 # Starting with sold homes - dropping those with " -  ", 0 or 10
@@ -152,6 +159,7 @@ data["sale_price"] = data_sold["sale_price"].astype(float)
 
 # except:
 #     data_sold["price_per_sqft"] = None
+
 # %%
 borough_map = {1: "Manhattan", 2: "Bronx", 3: "Brooklyn", 4: "Queens", 5:"Staten Island"}
 data_sold["borough"] = data_sold.borough.map(borough_map)
@@ -168,7 +176,7 @@ data = data.drop(['building_class_at_present', 'tax_class_at_present'], axis = 1
 
 # %%
 ############ DATA VISUALIZATION ############
-plt.bar(labels, values)
+plt.bar(labels, values, edgecolor = "black")
 # ax.set_xticklabels(("Manhattan", "Bronx", "Brooklyn", "Queens", "Staten Island"))
 plt.ylabel("Average Sale Price (Millions)")
 plt.xlabel("Borough")
@@ -223,6 +231,19 @@ plt.title("Sale Price by Tax Class")
 plt.xlabel("Tax Class")
 plt.ylabel("Sale Price")
 plt.show()
+# %%
+data_low = data_sold.loc[data_sold["sale_price"] <= 10000000]
+sns.lmplot(x = "total_units", y = "sale_price", data = data_low.loc[data_low['total_units'] < 500])
+plt.ylim((0, 10000000))
+plt.show()
+# %%
+# Distribution of Percent Residential Units - Not very informative but interesting 
+# as most buildings are 100% residential
+plt.hist(data_sold["percent_residential_units"], bins = 40, edgecolor = 'black')
+plt.title("Histogram of Percent of Residential Units")
+plt.xlabel("Percent Residential")
+plt.ylabel("Frequency")
+plt.show()
 # %% [markdown]
 # Variables we will use in our model:
 # * borough
@@ -233,6 +254,12 @@ plt.show()
 # * tax_class_at_time_of_sale
 # * building_class_at_time_of_sale
 # * sale_price.
+# 
+# Variables to consider:
+# * percent_residential_units
+# * gross_square_feet
+# * price per square foot
+# * sale date ??.
 # %%
 ############ MODEL BUILDING ############
 # Linear Regression
@@ -249,13 +276,13 @@ from sklearn.linear_model import LinearRegression
 from sklearn.svm import SVR 
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
 from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.preprocessing import StandardScaler
 from sklearn.compose import ColumnTransformer
-from sklearn.preprocessing import LabelEncoder
+from sklearn.metrics import mean_squared_error
+from sklearn.metrics import mean_absolute_error
 # %%
 data_sold_features = data_sold[["borough", "building_class_category", "zip_code", "total_units", "age", "tax_class_at_time_of_sale", "building_class_at_time_of_sale", "sale_price"]]
 
@@ -298,20 +325,67 @@ print(y_test.shape)
 # %% Linear Regression
 lr = LinearRegression()
 lr.fit(X_train, y_train)
-print(lr.score(X_train, y_train))
-lr.score(X_test, y_test)
+# R-squared
+print(f"Training R-Squared: {lr.score(X_train, y_train)}")
+print(f"Testing R_squared {lr.score(X_test, y_test)}")
+# Mean Squared Error
+print(f"Training MSE: {mean_squared_error(y_train, lr.predict(X_train))}")
+print(f"Testing MSE: {mean_squared_error(y_test, lr.predict(X_test))}")
+# Mean Absolute Error
+print(f"Training MAE: {mean_absolute_error(y_train, lr.predict(X_train))}")
+print(f"Testing MAE: {mean_absolute_error(y_test, lr.predict(X_test))}")
 # %% SVR
-
+svr = SVR()
+svr.fit(X_train, y_train)
+# R-squared
+print(f"Training R-Squared: {svr.score(X_train, y_train)}")
+print(f"Testing R_squared {svr.score(X_test, y_test)}")
+# Mean Squared Error
+print(f"Training MSE: {mean_squared_error(y_train, svr.predict(X_train))}")
+print(f"Testing MSE: {mean_squared_error(y_test, svr.predict(X_test))}")
+# Mean Absolute Error
+print(f"Training MAE: {mean_absolute_error(y_train, svr.predict(X_train))}")
+print(f"Testing MAE: {mean_absolute_error(y_test, svr.predict(X_test))}")
 # %% Decision Tree
-dt = DecisionTreeRegressor()
+dt = DecisionTreeRegressor(max_depth=10, min_samples_split=10)
 dt.fit(X_train, y_train)
-print(dt.score(X_train, y_train))
-dt.score(X_test, y_test)
-# %% Random Forest
-rf = RandomForestRegressor(random_state=10)
-rf.fit(X_train, y_train)
-print(rf.score(X_train, y_train))
-rf.score(X_test, y_test)
+# R-squared
+print(f"Training R-Squared: {dt.score(X_train, y_train)}")
+print(f"Testing R_squared {dt.score(X_test, y_test)}")
+# Mean Squared Error
+print(f"Training MSE: {mean_squared_error(y_train, dt.predict(X_train))}")
+print(f"Testing MSE: {mean_squared_error(y_test, dt.predict(X_test))}")
+# Mean Absolute Error
+print(f"Training MAE: {mean_absolute_error(y_train, dt.predict(X_train))}")
+print(f"Testing MAE: {mean_absolute_error(y_test, dt.predict(X_test))}")
 # %%
-classification_report(y_test, lr.predict(X_test))
+train = []
+test = []
+depths = list(range(10,101,10))
+for depth in depths:
+    dt = DecisionTreeRegressor(max_depth=10, min_samples_leaf=1, min_samples_split=depth)
+    dt.fit(X_train, y_train)
+    train.append(dt.score(X_train, y_train))
+    test.append(dt.score(X_test, y_test))
+    
+plt.plot(depths, train, c = "blue")
+plt.plot(depths, test, c = "red")
+plt.title("Accuracies at Different Tree Depths")
+plt.xlabel("Max Depth")
+plt.ylabel("R-Squared")
+plt.show()
+# %% Random Forest
+rf = RandomForestRegressor(max_depth=10, min_samples_split=10, random_state=10)
+rf.fit(X_train, y_train)
+# R-squared
+print(f"Training R-Squared: {rf.score(X_train, y_train)}")
+print(f"Testing R_squared {rf.score(X_test, y_test)}")
+# Mean Squared Error
+print(f"Training MSE: {mean_squared_error(y_train, rf.predict(X_train))}")
+print(f"Testing MSE: {mean_squared_error(y_test, rf.predict(X_test))}")
+# Mean Absolute Error
+print(f"Training MAE: {mean_absolute_error(y_train, rf.predict(X_train))}")
+print(f"Testing MAE: {mean_absolute_error(y_test, rf.predict(X_test))}")
+# %%
+
 # %%
