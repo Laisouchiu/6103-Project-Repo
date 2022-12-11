@@ -161,9 +161,9 @@ print(X_train.shape)
 print(X_test.shape)
 print(y_train.shape)
 print(y_test.shape)
+
 # %%
-# %%
-# sklearn
+########### Building model with Sklearn ############
 from sklearn.linear_model import LinearRegression
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.ensemble import RandomForestRegressor
@@ -178,12 +178,50 @@ from sklearn.metrics import mean_absolute_error
 # %% Linear Regression
 lr = LinearRegression()
 lr.fit(X_train, y_train)
+
+#%%
 # R-squared
 print(f"Training R-Squared: {lr.score(X_train, y_train)}")
 print(f"Testing R_squared {lr.score(X_test, y_test)}")
+
+#%%
 # Mean Squared Error
 print(f"Training MSE: {mean_squared_error(y_train, lr.predict(X_train))}")
 print(f"Testing MSE: {mean_squared_error(y_test, lr.predict(X_test))}")
+
+#%%
 # Mean Absolute Error
 print(f"Training MAE: {mean_absolute_error(y_train, lr.predict(X_train))}")
 print(f"Testing MAE: {mean_absolute_error(y_test, lr.predict(X_test))}")
+
+
+
+
+# %%
+########### Building model with statsmodel ############
+from statsmodels.formula.api import ols
+from statsmodels.stats.outliers_influence import variance_inflation_factor
+
+#%%
+
+X_train1, X_test1, y_train1, y_test1 = train_test_split(xpizza, ypizza, test_size = 0.250, random_state=333)
+
+# %%
+lm_model = ols(formula=' sale_price ~ C(borough) + C(building_class_category) + C(zip_code) + total_units + percent_residential_units + age + gross_square_feet + C(tax_class_at_time_of_sale) + C(building_class_at_time_of_sale)', data=clean_df)
+lm_model_fit = lm_model.fit()
+
+
+print(lm_model_fit.summary())
+
+# %%
+########### VIFs Checking  ############
+
+X = dfadmit[['gpa', 'rank']]
+X['Intercept'] = 1
+
+# # Compute and view VIF
+vif = pd.DataFrame()
+vif["variables"] = X.columns
+vif["VIF"] = [ variance_inflation_factor(X.values, i) for i in range(X.shape[1]) ] # list comprehension
+
+print(vif)
