@@ -254,20 +254,28 @@ rf_tuned = GridSearchCV(estimator = rf,
                             n_jobs=-1,
                         verbose=0)
 
-rf_tuned.fit(X_train, y_train)
+rf_tuned.fit(X, y)
 rf_tuned.best_estimator_
 # %%
 model = rf_tuned.best_estimator_.fit(X_train,y_train)
-# %%
+
 print("Training score:",model.score(X_train, y_train))
 print("Testing score:",model.score(X_test, y_test))
 
 # %%
+# Random Forest Cross Validation
 from sklearn.model_selection import cross_val_score
 
-full_cv = RandomForestRegressor(max_depth=100,max_features = 16 ,random_state = 10)
+full_cv = RandomForestRegressor(max_depth=50, max_features=10, n_estimators=200, random_state = 10)
 
-cv_results = cross_val_score(full_cv, X, y, cv = 5)
+cv_results = cross_val_score(full_cv, X_train, y_train, cv = 5)
 print(cv_results)
+
 # %%
-# Cross Validation Of Random Forest
+# Decision Tree
+tree_cv = DecisionTreeRegressor(max_depth=50, max_features=10, random_state=10)
+
+cv_results = cross_val_score(tree_cv, X_train, y_train, cv=5)
+print(cv_results)
+print(np.mean(cv_results))
+# %%
