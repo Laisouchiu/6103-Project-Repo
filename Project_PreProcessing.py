@@ -11,7 +11,7 @@ from sklearn.preprocessing import OneHotEncoder
 from sklearn.preprocessing import StandardScaler
 from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import LabelEncoder
-
+from sklearn.model_selection import train_test_split
 import statsmodels.api as sm
 # %%
 ############ IMPORTING DATA ############
