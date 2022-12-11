@@ -207,7 +207,7 @@ from statsmodels.stats.outliers_influence import variance_inflation_factor
 lm_X = clean_df.drop(["sale_price"], axis=1)
 lm_Y = clean_df['sale_price']
 
-lm_X_train, lm_X_test, lm_Y_train, lm_Y_test = train_test_split(lm_X, lm_Y, test_size = 0.250, random_state=333)
+lm_X_train, lm_test_X, lm_Y_train, lm_Y_test = train_test_split(lm_X, lm_Y, test_size = 0.250, random_state=333)
 
 ## Training Dataframe
 lm_train = lm_X_train 
@@ -221,8 +221,11 @@ print(lm_model_fit.summary())
 
 #%%
 ### Use the model in testing set
-modelpredicitons = pd.DataFrame( columns=['gre_GpaLM'], data= modelGreGpaFit.predict(dfadmit.gpa)) 
-
+PredictedPrice_vs_ActualPrice = pd.DataFrame( columns=['Predicted'], data = lm_model_fit.predict(lm_test_X)) 
+PredictedPrice_vs_ActualPrice['Actual'] = lm_Y_test
+#print(lm_test_X.shape)
+#print(predicitons.shape)
+print(PredictedPrice_vs_ActualPrice.head())
 
 
 # %%
