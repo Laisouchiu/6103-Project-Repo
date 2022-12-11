@@ -12,6 +12,19 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import LabelEncoder
 
+# %%
+# sklearn
+from sklearn.linear_model import LinearRegression
+from sklearn.tree import DecisionTreeRegressor
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.model_selection import cross_val_score
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import OneHotEncoder
+from sklearn.preprocessing import StandardScaler
+from sklearn.compose import ColumnTransformer
+from sklearn.metrics import mean_squared_error
+from sklearn.metrics import mean_absolute_error
+
 import statsmodels.api as sm
 # %%
 ############ IMPORTING DATA ############
@@ -102,7 +115,7 @@ clean_df = clean_df.loc[clean_df["sale_price"] > 10]
 clean_df.shape
 # %%
 # Plot Sales Price After Outliers Removed
-plt.hist()
+#plt.hist()
 
 # %%
 # Correlation Matrix
@@ -161,19 +174,7 @@ print(X_train.shape)
 print(X_test.shape)
 print(y_train.shape)
 print(y_test.shape)
-# %%
-# %%
-# sklearn
-from sklearn.linear_model import LinearRegression
-from sklearn.tree import DecisionTreeRegressor
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.model_selection import cross_val_score
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import OneHotEncoder
-from sklearn.preprocessing import StandardScaler
-from sklearn.compose import ColumnTransformer
-from sklearn.metrics import mean_squared_error
-from sklearn.metrics import mean_absolute_error
+
 
 # %% Linear Regression
 lr = LinearRegression()
@@ -229,4 +230,35 @@ print(f"Training MAE: {mean_absolute_error(y_train, rf.predict(X_train))}")
 print(f"Testing MAE: {mean_absolute_error(y_test, rf.predict(X_test))}")
 # %%
 
+# %% Random Forest
+from sklearn.model_selection import GridSearchCV
+param_grid = {
+    "n_estimators":[100,200,300],
+    "max_depth":[10, 50, 100],
+    "max_features":[6,8,10,12,14,16]
+}
+
+rf = RandomForestRegressor(random_state = 10)
+
+rf_tuned = GridSearchCV(estimator = rf,
+                            param_grid = param_grid,
+                            cv = 2,
+                            n_jobs=-1,
+                        verbose=0)
+
+rf_tuned.fit(X_train, y_train)
+rf_tuned.best_estimator_
+# %%
+model = rf_tuned.best_estimator_.fit(X_train,y_train)
+# %%
+print("Training score:",model.score(X_train, y_train))
+print("Testing score:",model.score(X_test, y_test))
+
+# %%
+from sklearn.model_selection import cross_val_score
+
+full_cv = RandomForestRegressor(max_depth=100,max_features = 16 ,random_state = 10)
+
+cv_results = cross_val_score(full_cv, X, y, cv = 5)
+print(cv_results)
 # %%
