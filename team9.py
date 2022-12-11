@@ -41,7 +41,7 @@ data = data.drop(['easement'], axis = 1)
 print(data[(data['land_square_feet'].isnull()) & (data['gross_square_feet'].notnull())].shape[0])
 print(data[(data['land_square_feet'].notnull()) & (data['gross_square_feet'].isnull())].shape[0])
 
-# so 1372 values can be imputed
+# This indicate we have 1372 values can be imputed
 # %%
 fillValues = data[['land_square_feet','gross_square_feet']]
 len(fillValues[(fillValues['land_square_feet'].isnull()) & (fillValues['gross_square_feet'].notnull())])
