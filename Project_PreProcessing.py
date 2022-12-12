@@ -145,15 +145,6 @@ plt.show()
 # Variables to consider:
 # * price per square foot
 # * sale date ??.
-# %%
-############ MODEL BUILDING ############
-# Linear Regression
-from statsmodels.formula.api import ols
-
-form = "sale_price ~ C(borough) + C(building_class_category) + C(zip_code) + total_units + percent_residential_units + age + gross_square_feet + C(tax_class_at_time_of_sale) + C(building_class_at_time_of_sale)"
-
-modelPrice = ols(formula=form, data=clean_df).fit()
-modelPrice.summary()
 
 # %%
 data_sold_features = data_few_cols[["borough", "building_class_category", "zip_code", "total_units", "percent_residential_units", "age", "gross_square_feet", "tax_class_at_time_of_sale", "building_class_at_time_of_sale", "sale_price"]]
