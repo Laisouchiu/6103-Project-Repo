@@ -239,21 +239,19 @@ vifs["VIF"] = [ variance_inflation_factor(Xvif.values, i)
 
 print(vifs)
 # %%
-lm_model = ols(formula=' sale_price ~  C(building_class_category) + C(building_class_at_time_of_sale) + C(tax_class_at_time_of_sale) + C(borough) + total_units + age + gross_square_feet', data=lm_train)
+lm_model = ols(formula=' sale_price ~  C(building_class_category) + C(building_class_at_time_of_sale) + C(tax_class_at_time_of_sale) + C(borough) + total_units + gross_square_feet', data=lm_train)
 lm_model_fit = lm_model.fit()
 print(lm_model_fit.summary())
 #%%
 ##### Linearity Checkings #####
-sns.lmplot(x = "total_units", y = "sale_price", data = clean_df)
-#plt.ylim((0, 10000000))
+
+sns.lmplot(x = "total_units", y = "sale_price", data = clean_df[clean_df['total_units']<100], line_kws={'color':'red'} )
 plt.show()
 
-sns.lmplot(x = "age", y = "sale_price", data = clean_df)
-#plt.ylim((0, 10000000))
+sns.lmplot(x = "age", y = "sale_price", data = clean_df[clean_df['age']<100], line_kws={'color':'red'})
 plt.show()
 
-sns.lmplot(x = "gross_square_feet", y = "sale_price", data = clean_df)
-#plt.ylim((0, 10000000))
+sns.lmplot(x = "gross_square_feet", y = "sale_price", data = clean_df[clean_df['gross_square_feet']<8000], line_kws={'color':'red'})
 plt.show()
 
 #%%
