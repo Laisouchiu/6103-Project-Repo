@@ -209,39 +209,57 @@ lm_model_fit = lm_model.fit()
 print(lm_model_fit.summary())
 
 # %%
-########### Model Assumptions  ############
+########## Model Assumptions  ############
 
 ##### Normally bell shaped ######
 sns.histplot(data=clean_df, x='sale_price')
 
-#%%
+
 ##### VIFs Checkings #####
 Xvifs = clean_df[['borough', 'building_class_category', 'zip_code', 'total_units', 
               'percent_residential_units', 'age', 'gross_square_feet', 
               'tax_class_at_time_of_sale', 'building_class_at_time_of_sale']]
-
 Xvif = Xvifs.drop(['building_class_category', 'building_class_at_time_of_sale'], axis=1)
 vifs = pd.DataFrame()
 vifs["features"] = Xvif.columns
 vifs["VIF"] = [ variance_inflation_factor(Xvif.values, i) 
                for i in range(len(Xvif.columns)) ]
-
 print(vifs)
-# %%
-lm_model = ols(formula=' sale_price ~  C(building_class_category) + C(building_class_at_time_of_sale) + C(tax_class_at_time_of_sale) + C(borough) + total_units + gross_square_feet', data=clean_df)
-lm_model_fit = lm_model.fit()
-print(lm_model_fit.summary())
-#%%
-##### Linearity Checkings #####
 
+##### Linearity Checkings #####
 sns.lmplot(x = "total_units", y = "sale_price", data = clean_df[clean_df['total_units']<100], line_kws={'color':'red'} )
 plt.show()
-
 sns.lmplot(x = "age", y = "sale_price", data = clean_df[clean_df['age']<100], line_kws={'color':'red'})
 plt.show()
-
 sns.lmplot(x = "gross_square_feet", y = "sale_price", data = clean_df[clean_df['gross_square_feet']<8000], line_kws={'color':'red'})
 plt.show()
+
+# %%
+lm_model = ols(formula=' sale_price ~  C(building_class_category) + C(building_class_at_time_of_sale) + C(tax_class_at_time_of_sale) + C(borough) + age + total_units + gross_square_feet + age*C(building_class_category) + age + total_units*C(building_class_category)', data=clean_df)
+lm_model_fit = lm_model.fit()
+print(lm_model_fit.summary())
+
+# From the summary, try to get as much info as we can
+# Df Residuals (# total observations minus Df Model minus 1)
+# Df Model (# of x variables)
+# R-squared, what does that mean?
+# Adj R-squared
+# F-statistics
+# Prob (F-statistics), ie. p-value for F-statistics
+# Log-Likelihood
+# AIC (model eval)
+# BIC (model eval)
+
+# coef
+# std err
+# t
+# P>|t|, aka p-value for the coefficient significance
+# 95% confidence intervals
+
+# Omnibus - close to zero means residuals are normally distributed
+# Prob(Omnibus) - close to 1 means residuals are normally distributed
+# skew (positive is right tailed, negative is left)
+# Kurtosis (tailedness, normal dist = 3, less than 3 is fatter tail, and flat top.)
 
 # %% [markdown]
 # Variables we will use in our model:
