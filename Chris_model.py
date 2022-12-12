@@ -233,7 +233,7 @@ sns.lmplot(x = "gross_square_feet", y = "sale_price", data = clean_df[clean_df['
 plt.show()
 
 # %%
-lm_model = ols(formula=' sale_price ~  C(building_class_category) + C(building_class_at_time_of_sale) + C(tax_class_at_time_of_sale) + C(borough) + age + total_units + gross_square_feet + age*C(building_class_category) + age + total_units*C(building_class_category)', data=clean_df)
+lm_model = ols(formula=' sale_price ~  C(building_class_category) + C(building_class_at_time_of_sale) + age + total_units + C(tax_class_at_time_of_sale) + C(borough) + gross_square_feet + age*C(building_class_category) + age + total_units*C(building_class_category)', data=clean_df)
 lm_model_fit = lm_model.fit()
 print(lm_model_fit.summary())
 
