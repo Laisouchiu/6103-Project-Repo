@@ -226,9 +226,10 @@ plt.xlabel("Gross Square Feet")
 plt.ylabel("Sale Price")
 plt.show()
 #%% Build the model with interactions terms again: 
-lm_model = ols(formula=' sale_price ~  age + total_units + gross_square_feet + C(borough) + C(tax_class_at_time_of_sale) + C(building_class_category) + C(building_class_at_time_of_sale) + age*C(building_class_category) + total_units*C(building_class_category)', data=clean_df)
+lm_model = ols(formula=' sale_price ~  age + total_units + gross_square_feet + C(borough) + C(tax_class_at_time_of_sale) + C(building_class_category) + age:C(building_class_category) + total_units:C(building_class_category)', data=clean_df)
 lm_model_fit = lm_model.fit()
 print(lm_model_fit.summary())
+# + C(building_class_category) + C(building_class_at_time_of_sale)
 # %% Decision Tree
 dt = DecisionTreeRegressor(max_depth=10, min_samples_split=10)
 dt.fit(X_train, y_train)

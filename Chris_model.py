@@ -213,19 +213,22 @@ print(lm_model_fit.summary())
 ## Normally bell shaped ##
 sns.histplot(data=clean_df, x='sale_price')
 
+#%%
 ## VIFs Checkings ##
 Xvifs = clean_df[['borough', 'building_class_category', 'zip_code', 'total_units', 
               'percent_residential_units', 'age', 'gross_square_feet', 
               'tax_class_at_time_of_sale', 'building_class_at_time_of_sale']]
-Xvif = Xvifs.drop(['building_class_category', 'building_class_at_time_of_sale'], axis=1)
+Xvif = Xvifs.drop(['building_class_category', 'building_class_at_time_of_sale', 'percent_residential_units', 'zip_code'], axis=1)
 vifs = pd.DataFrame()
 vifs["features"] = Xvif.columns
 vifs["VIF"] = [ variance_inflation_factor(Xvif.values, i) 
                for i in range(len(Xvif.columns)) ]
 print(vifs)
 
+#%%
 ## Linearity Checkings ##
 sns.lmplot(x = "total_units", y = "sale_price", data = clean_df[clean_df['total_units']<100], line_kws={'color':'red'} )
+plt.ylim((0, 10000000))
 plt.show()
 sns.lmplot(x = "age", y = "sale_price", data = clean_df[clean_df['age']<100], line_kws={'color':'red'})
 plt.show()
@@ -233,9 +236,34 @@ sns.lmplot(x = "gross_square_feet", y = "sale_price", data = clean_df[clean_df['
 plt.show()
 
 # %%
-lm_model = ols(formula=' sale_price ~  C(building_class_category) + C(building_class_at_time_of_sale) + age + total_units + C(tax_class_at_time_of_sale) + C(borough) + gross_square_feet + age*C(building_class_category) + age + total_units*C(building_class_category)', data=clean_df)
+# %%
+X = clean_df.drop(["sale_price"], axis=1)
+y = clean_df['sale_price']
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.20, random_state=55)
+
+X_train['sale_price'] = y_train
+
+#%%
+lm_model = ols(formula=' sale_price ~  C(building_class_category) + C(building_class_at_time_of_sale) + age + total_units + C(tax_class_at_time_of_sale) + C(borough) + gross_square_feet + age:C(building_class_category) + total_units:C(building_class_category)', data=X_train)
 lm_model_fit = lm_model.fit()
 print(lm_model_fit.summary())
+
+#%%
+pre_v_act = pd.DataFrame( columns=['Predict'], data=lm_model_fit.predict(X_test)) 
+pre_v_act['Actual'] = y_test
+print(pre_v_act.shape)
+print(pre_v_act.head())
+
+#%%
+## Average Biased
+pre_v_act['Differences'] = pre_v_act.apply(lambda row: abs( (row[0]-row[1])/row[1]), axis=1)
+
+print('With outliers:', pre_v_act['Differences'].describe())
+clean = pre_v_act[pre_v_act['Differences']<1]
+print('Without outliers:', clean['Differences'].describe())
+print('')
+print(clean['Differences'].mean())
 
 #%%
 ############ MODEL BUILDING ############
