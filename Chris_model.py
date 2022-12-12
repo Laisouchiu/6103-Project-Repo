@@ -218,12 +218,21 @@ sns.histplot(data=clean_df, x='sale_price')
 Xvifs = clean_df[['borough', 'building_class_category', 'zip_code', 'total_units', 
               'percent_residential_units', 'age', 'gross_square_feet', 
               'tax_class_at_time_of_sale', 'building_class_at_time_of_sale']]
-Xvif = Xvifs.drop(['building_class_category', 'building_class_at_time_of_sale', 'percent_residential_units', 'zip_code'], axis=1)
-vifs = pd.DataFrame()
-vifs["features"] = Xvif.columns
-vifs["VIF"] = [ variance_inflation_factor(Xvif.values, i) 
-               for i in range(len(Xvif.columns)) ]
-print(vifs)
+try:
+    vifs = pd.DataFrame()
+    vifs["features"] = Xvifs.columns
+    vifs["VIF"] = [ variance_inflation_factor(Xvifs.values, i) 
+                   for i in range(len(Xvifs.columns)) ]
+    print(vifs)
+except TypeError:
+    Xvif = clean_df[['borough', 'zip_code', 'total_units', 
+              'percent_residential_units', 'age', 'gross_square_feet', 
+              'tax_class_at_time_of_sale']]
+    vifs2 = pd.DataFrame()
+    vifs2["features"] = Xvif.columns
+    vifs2["VIF"] = [ variance_inflation_factor(Xvif.values, i) 
+                   for i in range(len(Xvif.columns)) ]
+    print(vifs)
 
 #%%
 ## Linearity Checkings ##
@@ -245,17 +254,16 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.20, random
 X_train['sale_price'] = y_train
 
 #%%
-lm_model = ols(formula=' sale_price ~  C(building_class_category) + C(building_class_at_time_of_sale) + age + total_units + C(tax_class_at_time_of_sale) + C(borough) + gross_square_feet + age:C(building_class_category) + total_units:C(building_class_category)', data=X_train)
+lm_model = ols(formula=' sale_price ~  C(building_class_category) + age + total_units + C(tax_class_at_time_of_sale) + C(borough) + gross_square_feet + age:C(building_class_category) + total_units:C(building_class_category)', data=X_train)
 lm_model_fit = lm_model.fit()
 print(lm_model_fit.summary())
-
+# + C(building_class_at_time_of_sale) 
 #%%
 pre_v_act = pd.DataFrame( columns=['Predict'], data=lm_model_fit.predict(X_test)) 
 pre_v_act['Actual'] = y_test
 print(pre_v_act.shape)
 print(pre_v_act.head())
 
-#%%
 ## Average Biased
 pre_v_act['Differences'] = pre_v_act.apply(lambda row: abs( (row[0]-row[1])/row[1]), axis=1)
 
@@ -265,18 +273,8 @@ print('Without outliers:', clean['Differences'].describe())
 print('')
 print(clean['Differences'].mean())
 
-#%%
-############ MODEL BUILDING ############
-# Deleted from main file: 
-# Linear Regression
-from statsmodels.formula.api import ols
 
-form = "sale_price ~ C(borough) + C(building_class_category) + C(zip_code) + total_units + percent_residential_units + age + gross_square_feet + C(tax_class_at_time_of_sale) + C(building_class_at_time_of_sale)"
-
-modelPrice = ols(formula=form, data=clean_df).fit()
-modelPrice.summary()
-
-#%%
+#%% [markdown]
 # From the summary, try to get as much info as we can
 # Df Residuals (# total observations minus Df Model minus 1)
 # Df Model (# of x variables)
@@ -321,3 +319,15 @@ modelPrice.summary()
 # * percent_residential_units
 # * price per square foot
 # * sale date ??.
+
+
+
+#%%
+##### Overlapping content celeted from main file #####
+# Linear Regression
+from statsmodels.formula.api import ols
+
+form = "sale_price ~ C(borough) + C(building_class_category) + C(zip_code) + total_units + percent_residential_units + age + gross_square_feet + C(tax_class_at_time_of_sale) + C(building_class_at_time_of_sale)"
+
+modelPrice = ols(formula=form, data=clean_df).fit()
+modelPrice.summary()
