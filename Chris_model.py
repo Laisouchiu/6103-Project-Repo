@@ -204,7 +204,7 @@ from statsmodels.stats.outliers_influence import variance_inflation_factor
 
 # %%
 ### Training model building
-lm_model = ols(formula=' sale_price ~ C(borough) + C(building_class_category) + C(zip_code) + total_units + percent_residential_units + age + gross_square_feet + C(tax_class_at_time_of_sale) + C(building_class_at_time_of_sale)', data=lm_train)
+lm_model = ols(formula=' sale_price ~ C(borough) + C(building_class_category) + C(zip_code) + total_units + percent_residential_units + age + gross_square_feet + C(tax_class_at_time_of_sale) + C(building_class_at_time_of_sale)', data=clean_df)
 lm_model_fit = lm_model.fit()
 print(lm_model_fit.summary())
 
@@ -236,6 +236,17 @@ plt.show()
 lm_model = ols(formula=' sale_price ~  C(building_class_category) + C(building_class_at_time_of_sale) + C(tax_class_at_time_of_sale) + C(borough) + age + total_units + gross_square_feet + age*C(building_class_category) + age + total_units*C(building_class_category)', data=clean_df)
 lm_model_fit = lm_model.fit()
 print(lm_model_fit.summary())
+
+#%%
+############ MODEL BUILDING ############
+# Deleted from main file: 
+# Linear Regression
+from statsmodels.formula.api import ols
+
+form = "sale_price ~ C(borough) + C(building_class_category) + C(zip_code) + total_units + percent_residential_units + age + gross_square_feet + C(tax_class_at_time_of_sale) + C(building_class_at_time_of_sale)"
+
+modelPrice = ols(formula=form, data=clean_df).fit()
+modelPrice.summary()
 
 #%%
 # From the summary, try to get as much info as we can
@@ -273,6 +284,11 @@ print(lm_model_fit.summary())
 # * building_class_at_time_of_sale
 # * sale_price.
 # 
+# Variables we didn't use:
+# * easement: Too
+# * neighborhood, block, lot, address：These are all 
+# * land_square_feeet：Overlap information with gross_square_feet and we prefer more on gross_square_feet
+
 # Variables to consider:
 # * percent_residential_units
 # * price per square foot
