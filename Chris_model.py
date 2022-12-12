@@ -228,7 +228,7 @@ vifs["VIF"] = [ variance_inflation_factor(Xvif.values, i)
 
 print(vifs)
 # %%
-lm_model = ols(formula=' sale_price ~  C(building_class_category) + C(building_class_at_time_of_sale) + C(tax_class_at_time_of_sale) + C(borough) + total_units + gross_square_feet', data=lm_train)
+lm_model = ols(formula=' sale_price ~  C(building_class_category) + C(building_class_at_time_of_sale) + C(tax_class_at_time_of_sale) + C(borough) + total_units + gross_square_feet', data=clean_df)
 lm_model_fit = lm_model.fit()
 print(lm_model_fit.summary())
 #%%
@@ -242,14 +242,6 @@ plt.show()
 
 sns.lmplot(x = "gross_square_feet", y = "sale_price", data = clean_df[clean_df['gross_square_feet']<8000], line_kws={'color':'red'})
 plt.show()
-
-#%%
-### Use the model in testing set
-PredictedPrice_vs_ActualPrice = pd.DataFrame( columns=['Predicted'], data = lm_model_fit.predict(lm_test_X)) 
-PredictedPrice_vs_ActualPrice['Actual'] = lm_Y_test
-#print(lm_test_X.shape)
-#print(predicitons.shape)
-print(PredictedPrice_vs_ActualPrice.head())
 
 # %% [markdown]
 # Variables we will use in our model:
