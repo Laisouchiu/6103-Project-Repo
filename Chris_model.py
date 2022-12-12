@@ -219,34 +219,43 @@ lm_model = ols(formula=' sale_price ~ C(borough) + C(building_class_category) + 
 lm_model_fit = lm_model.fit()
 print(lm_model_fit.summary())
 
-#%%
-
-lm_infl = lm_model_fit.get_influence()
-print(lm_infl.summary_table())
-
 # %%
 ########### Model Assumptions  ############
 
 ##### Normally bell shaped ######
 sns.histplot(data=clean_df, x='sale_price')
 
+#%%
+##### VIFs Checkings #####
+Xvifs = clean_df[['borough', 'building_class_category', 'zip_code', 'total_units', 
+              'percent_residential_units', 'age', 'gross_square_feet', 
+              'tax_class_at_time_of_sale', 'building_class_at_time_of_sale']]
+
+Xvif = Xvifs.drop(['building_class_category', 'building_class_at_time_of_sale'], axis=1)
+vifs = pd.DataFrame()
+vifs["features"] = Xvif.columns
+vifs["VIF"] = [ variance_inflation_factor(Xvif.values, i) 
+               for i in range(len(Xvif.columns)) ]
+
+print(vifs)
+# %%
+lm_model = ols(formula=' sale_price ~  C(building_class_category) + C(building_class_at_time_of_sale) + C(tax_class_at_time_of_sale) + C(borough) + total_units + age + gross_square_feet', data=lm_train)
+lm_model_fit = lm_model.fit()
+print(lm_model_fit.summary())
+#%%
 ##### Linearity Checkings #####
 sns.lmplot(x = "total_units", y = "sale_price", data = clean_df)
 #plt.ylim((0, 10000000))
 plt.show()
 
-#%%
-##### VIFs Checkings #####
-X = clean_df[['borough', 'building_class_category', 'zip_code', 'total_units', 
-              'percent_residential_units', 'age', 'gross_square_feet', 
-              'tax_class_at_time_of_sale', 'building_class_at_time_of_sale']]
+sns.lmplot(x = "age", y = "sale_price", data = clean_df)
+#plt.ylim((0, 10000000))
+plt.show()
 
-vifs = pd.DataFrame()
-vifs["features"] = X.columns
-vifs["VIF"] = [ variance_inflation_factor(X.values, i) 
-               for i in range(len(X.columns)) ]
+sns.lmplot(x = "gross_square_feet", y = "sale_price", data = clean_df)
+#plt.ylim((0, 10000000))
+plt.show()
 
-print(vifs)
 #%%
 ### Use the model in testing set
 PredictedPrice_vs_ActualPrice = pd.DataFrame( columns=['Predicted'], data = lm_model_fit.predict(lm_test_X)) 
@@ -254,3 +263,21 @@ PredictedPrice_vs_ActualPrice['Actual'] = lm_Y_test
 #print(lm_test_X.shape)
 #print(predicitons.shape)
 print(PredictedPrice_vs_ActualPrice.head())
+
+# %% [markdown]
+# Variables we will use in our model:
+# * borough
+# * building_class_category
+# * zip_codes
+# * total_units
+# * percent_residential_units
+# * age
+# * gross_square_feet
+# * tax_class_at_time_of_sale
+# * building_class_at_time_of_sale
+# * sale_price.
+# 
+# Variables to consider:
+# * percent_residential_units
+# * price per square foot
+# * sale date ??.
