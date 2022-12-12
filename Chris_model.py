@@ -210,12 +210,10 @@ print(lm_model_fit.summary())
 
 # %%
 ########## Model Assumptions  ############
-
-##### Normally bell shaped ######
+## Normally bell shaped ##
 sns.histplot(data=clean_df, x='sale_price')
 
-
-##### VIFs Checkings #####
+## VIFs Checkings ##
 Xvifs = clean_df[['borough', 'building_class_category', 'zip_code', 'total_units', 
               'percent_residential_units', 'age', 'gross_square_feet', 
               'tax_class_at_time_of_sale', 'building_class_at_time_of_sale']]
@@ -226,7 +224,7 @@ vifs["VIF"] = [ variance_inflation_factor(Xvif.values, i)
                for i in range(len(Xvif.columns)) ]
 print(vifs)
 
-##### Linearity Checkings #####
+## Linearity Checkings ##
 sns.lmplot(x = "total_units", y = "sale_price", data = clean_df[clean_df['total_units']<100], line_kws={'color':'red'} )
 plt.show()
 sns.lmplot(x = "age", y = "sale_price", data = clean_df[clean_df['age']<100], line_kws={'color':'red'})
@@ -239,6 +237,7 @@ lm_model = ols(formula=' sale_price ~  C(building_class_category) + C(building_c
 lm_model_fit = lm_model.fit()
 print(lm_model_fit.summary())
 
+#%%
 # From the summary, try to get as much info as we can
 # Df Residuals (# total observations minus Df Model minus 1)
 # Df Model (# of x variables)
