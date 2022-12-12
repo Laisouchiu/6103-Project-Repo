@@ -202,9 +202,32 @@ print(f"Testing MAE: {mean_absolute_error(y_test, lr.predict(X_test))}")
 from statsmodels.formula.api import ols
 from statsmodels.stats.outliers_influence import variance_inflation_factor
 
+#%%
+### Adding one more column 'season'
+clean_df['sale_date'] = pd.to_datetime(clean_df['sale_date'])
+clean_df['sale_month'] = clean_df['sale_date'].dt.month
+# clean_df['month'].describe()
+
+def season(month): 
+    if month==12 or month==1 or month==2:
+        season = 'Winter'
+    elif month==9 or month==10 or month==11:
+        season = 'Autumn'
+    elif month==6 or month==7 or month==8:
+        season = 'Summer'
+    else:
+        season = 'Spring'
+    return season
+
+clean_df['Season'] = clean_df['sale_month'].apply(season)
+clean_df['Season'] = clean_df['Season'].astype('category')
+clean_df['Season'].info()
+print('')
+clean_df['Season'].value_counts()
+
 # %%
-### Training model building
-lm_model = ols(formula=' sale_price ~ C(borough) + C(building_class_category) + C(zip_code) + total_units + percent_residential_units + age + gross_square_feet + C(tax_class_at_time_of_sale) + C(building_class_at_time_of_sale)', data=clean_df)
+### First build
+lm_model = ols(formula=' sale_price ~ C(Season) + C(borough) + C(building_class_category) + C(zip_code) + total_units + percent_residential_units + age + gross_square_feet + C(tax_class_at_time_of_sale) + C(building_class_at_time_of_sale)', data=clean_df)
 lm_model_fit = lm_model.fit()
 print(lm_model_fit.summary())
 
@@ -217,22 +240,30 @@ sns.histplot(data=clean_df, x='sale_price')
 ## VIFs Checkings ##
 Xvifs = clean_df[['borough', 'building_class_category', 'zip_code', 'total_units', 
               'percent_residential_units', 'age', 'gross_square_feet', 
-              'tax_class_at_time_of_sale', 'building_class_at_time_of_sale']]
-try:
-    vifs = pd.DataFrame()
-    vifs["features"] = Xvifs.columns
-    vifs["VIF"] = [ variance_inflation_factor(Xvifs.values, i) 
-                   for i in range(len(Xvifs.columns)) ]
-    print(vifs)
-except TypeError:
-    Xvif = clean_df[['borough', 'zip_code', 'total_units', 
-              'percent_residential_units', 'age', 'gross_square_feet', 
-              'tax_class_at_time_of_sale']]
-    vifs2 = pd.DataFrame()
-    vifs2["features"] = Xvif.columns
-    vifs2["VIF"] = [ variance_inflation_factor(Xvif.values, i) 
-                   for i in range(len(Xvif.columns)) ]
-    print(vifs)
+              'tax_class_at_time_of_sale', 'building_class_at_time_of_sale', 'Season']]
+
+Xvif = Xvifs.drop(['building_class_category', 'building_class_at_time_of_sale', 'Season', 'percent_residential_units', 'zip_code'], axis=1)
+vifs = pd.DataFrame()
+vifs["features"] = Xvif.columns
+vifs["VIF"] = [ variance_inflation_factor(Xvif.values, i) 
+               for i in range(len(Xvif.columns)) ]
+print(vifs)
+
+#try:
+#    vifs = pd.DataFrame()
+#    vifs["features"] = Xvifs.columns
+#    vifs["VIF"] = [ variance_inflation_factor(Xvifs.values, i) 
+#                   for i in range(len(Xvifs.columns)) ]
+#    print(vifs)
+#except TypeError:
+#    Xvif = clean_df[['borough', 'zip_code', 'total_units', 
+#              'percent_residential_units', 'age', 'gross_square_feet', 
+#              'tax_class_at_time_of_sale']]
+#    vifs2 = pd.DataFrame()
+#    vifs2["features"] = Xvif.columns
+#    vifs2["VIF"] = [ variance_inflation_factor(Xvif.values, i) 
+#                   for i in range(len(Xvif.columns)) ]
+#    print(vifs)
 
 #%%
 ## Linearity Checkings ##
@@ -245,7 +276,6 @@ sns.lmplot(x = "gross_square_feet", y = "sale_price", data = clean_df[clean_df['
 plt.show()
 
 # %%
-# %%
 X = clean_df.drop(["sale_price"], axis=1)
 y = clean_df['sale_price']
 
@@ -254,7 +284,7 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.20, random
 X_train['sale_price'] = y_train
 
 #%%
-lm_model = ols(formula=' sale_price ~  C(building_class_category) + age + total_units + C(tax_class_at_time_of_sale) + C(borough) + gross_square_feet + age:C(building_class_category) + total_units:C(building_class_category)', data=X_train)
+lm_model = ols(formula=' sale_price ~  C(Season) + C(building_class_category) + age + total_units + C(tax_class_at_time_of_sale) + C(borough) + gross_square_feet + age:C(building_class_category) + total_units:C(building_class_category)', data=X_train)
 lm_model_fit = lm_model.fit()
 print(lm_model_fit.summary())
 # + C(building_class_at_time_of_sale) 
