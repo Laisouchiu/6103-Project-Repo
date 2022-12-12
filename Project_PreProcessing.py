@@ -184,7 +184,7 @@ print(y_train.shape)
 print(y_test.shape)
 
 
-# %% Linear Regression
+# %% Linear Regression by Sklearn: 
 lr = LinearRegression()
 lr.fit(X_train, y_train)
 # R-squared
@@ -196,6 +196,36 @@ print(f"Testing MSE: {mean_squared_error(y_test, lr.predict(X_test))}")
 # Mean Absolute Error
 print(f"Training MAE: {mean_absolute_error(y_train, lr.predict(X_train))}")
 print(f"Testing MAE: {mean_absolute_error(y_test, lr.predict(X_test))}")
+#%% Linear Regression by Statsmodels: 
+from statsmodels.formula.api import ols
+from statsmodels.stats.outliers_influence import variance_inflation_factor
+# First time model built
+lm_model = ols(formula=' sale_price ~ C(borough) + C(building_class_category) + C(zip_code) + total_units + percent_residential_units + age + gross_square_feet + C(tax_class_at_time_of_sale) + C(building_class_at_time_of_sale)', data=clean_df)
+lm_model_fit = lm_model.fit()
+print(lm_model_fit.summary())
+# Normally bell shaped
+sns.histplot(data=clean_df, x='sale_price')
+# VIFs Checkings
+Xvifs = clean_df[['borough', 'building_class_category', 'zip_code', 'total_units', 
+              'percent_residential_units', 'age', 'gross_square_feet', 
+              'tax_class_at_time_of_sale', 'building_class_at_time_of_sale']]
+Xvif = Xvifs.drop(['building_class_category', 'building_class_at_time_of_sale'], axis=1)
+vifs = pd.DataFrame()
+vifs["features"] = Xvif.columns
+vifs["VIF"] = [ variance_inflation_factor(Xvif.values, i) 
+               for i in range(len(Xvif.columns)) ]
+print(vifs)
+# Linearity Checkings
+sns.lmplot(x = "total_units", y = "sale_price", data = clean_df[clean_df['total_units']<100], line_kws={'color':'red'} )
+plt.show()
+sns.lmplot(x = "age", y = "sale_price", data = clean_df[clean_df['age']<100], line_kws={'color':'red'})
+plt.show()
+sns.lmplot(x = "gross_square_feet", y = "sale_price", data = clean_df[clean_df['gross_square_feet']<8000], line_kws={'color':'red'})
+plt.show()
+# Build the model with interactions terms again: 
+lm_model = ols(formula=' sale_price ~  C(building_class_category) + C(building_class_at_time_of_sale) + C(tax_class_at_time_of_sale) + C(borough) + age + total_units + gross_square_feet + age*C(building_class_category) + age + total_units*C(building_class_category)', data=clean_df)
+lm_model_fit = lm_model.fit()
+print(lm_model_fit.summary())
 # %% Decision Tree
 dt = DecisionTreeRegressor(max_depth=10, min_samples_split=10)
 dt.fit(X_train, y_train)
@@ -236,8 +266,6 @@ print(f"Testing MSE: {mean_squared_error(y_test, rf.predict(X_test))}")
 # Mean Absolute Error
 print(f"Training MAE: {mean_absolute_error(y_train, rf.predict(X_train))}")
 print(f"Testing MAE: {mean_absolute_error(y_test, rf.predict(X_test))}")
-# %%
-
 # %% Random Forest
 from sklearn.model_selection import GridSearchCV
 param_grid = {
