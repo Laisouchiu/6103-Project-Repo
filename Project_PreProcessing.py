@@ -129,7 +129,9 @@ corr = clean_df.corr()
 ax = sns.heatmap(corr, cmap = 'Blues')
 plt.title("Correlation Matrix")
 plt.show()
-# %% [markdown]
+
+#%%[markdown]
+############ MODEL BUILDING ############
 # Variables we will use in our model:
 # * borough
 # * building_class_category
@@ -145,9 +147,8 @@ plt.show()
 # Variables to consider:
 # * price per square foot
 # * sale date ??.
-#%%
-############ MODEL BUILDING ############
 
+#%%
 data_sold_features = data_few_cols[["borough", "building_class_category", "zip_code", "total_units", "percent_residential_units", "age", "gross_square_feet", "tax_class_at_time_of_sale", "building_class_at_time_of_sale", "sale_price"]]
 dataPreprocessor = ColumnTransformer( transformers=
     [
