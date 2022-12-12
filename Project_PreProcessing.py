@@ -11,7 +11,23 @@ from sklearn.preprocessing import OneHotEncoder
 from sklearn.preprocessing import StandardScaler
 from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import LabelEncoder
+
+
+# %%
+# sklearn
+from sklearn.linear_model import LinearRegression
+from sklearn.tree import DecisionTreeRegressor
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import OneHotEncoder
+from sklearn.preprocessing import StandardScaler
+from sklearn.compose import ColumnTransformer
+from sklearn.metrics import mean_squared_error
+from sklearn.metrics import mean_absolute_error
+
+from sklearn.model_selection import train_test_split
+
 import statsmodels.api as sm
 # %%
 ############ IMPORTING DATA ############
@@ -102,11 +118,17 @@ clean_df = clean_df.loc[clean_df["sale_price"] > 10]
 clean_df.shape
 # %%
 # Plot Sales Price After Outliers Removed
-#plt.hist()
-
+plt.hist(clean_df.sale_price, bins = 30, edgecolor = "black")
+plt.title("Histogram of Sale Prices")
+plt.xlabel("Sale Price (Millions)")
+plt.ylabel("Frequency")
+plt.show()
 # %%
 # Correlation Matrix
-clean_df.corr()
+corr = clean_df.corr()
+ax = sns.heatmap(corr, cmap = 'Blues')
+plt.title("Correlation Matrix")
+plt.show()
 # %% [markdown]
 # Variables we will use in our model:
 # * borough
@@ -121,7 +143,6 @@ clean_df.corr()
 # * sale_price.
 # 
 # Variables to consider:
-# * percent_residential_units
 # * price per square foot
 # * sale date ??.
 # %%
@@ -161,19 +182,7 @@ print(X_train.shape)
 print(X_test.shape)
 print(y_train.shape)
 print(y_test.shape)
-# %%
-# %%
-# sklearn
-from sklearn.linear_model import LinearRegression
-from sklearn.tree import DecisionTreeRegressor
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.model_selection import cross_val_score
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import OneHotEncoder
-from sklearn.preprocessing import StandardScaler
-from sklearn.compose import ColumnTransformer
-from sklearn.metrics import mean_squared_error
-from sklearn.metrics import mean_absolute_error
+
 
 # %% Linear Regression
 lr = LinearRegression()
@@ -204,7 +213,7 @@ train = []
 test = []
 depths = list(range(10,101,10))
 for depth in depths:
-    dt = DecisionTreeRegressor(max_depth=10, min_samples_leaf=1, min_samples_split=depth)
+    dt = DecisionTreeRegressor(max_depth=depth, min_samples_leaf=1)
     dt.fit(X_train, y_train)
     train.append(dt.score(X_train, y_train))
     test.append(dt.score(X_test, y_test))
@@ -229,4 +238,44 @@ print(f"Training MAE: {mean_absolute_error(y_train, rf.predict(X_train))}")
 print(f"Testing MAE: {mean_absolute_error(y_test, rf.predict(X_test))}")
 # %%
 
+# %% Random Forest
+from sklearn.model_selection import GridSearchCV
+param_grid = {
+    "n_estimators":[100,200,300],
+    "max_depth":[10, 50, 100],
+    "max_features":[6,8,10,12,14,16]
+}
+
+rf = RandomForestRegressor(random_state = 10)
+
+rf_tuned = GridSearchCV(estimator = rf,
+                            param_grid = param_grid,
+                            cv = 2,
+                            n_jobs=-1,
+                        verbose=0)
+
+rf_tuned.fit(X, y)
+rf_tuned.best_estimator_
+# %%
+model = rf_tuned.best_estimator_.fit(X_train,y_train)
+
+print("Training score:",model.score(X_train, y_train))
+print("Testing score:",model.score(X_test, y_test))
+
+# %%
+# Random Forest Cross Validation
+from sklearn.model_selection import cross_val_score
+
+full_cv = RandomForestRegressor(max_depth=50, max_features=10, n_estimators=200, random_state = 10)
+
+cv_results = cross_val_score(full_cv, X_train, y_train, cv = 5)
+print(cv_results)
+
+# %%
+# Decision Tree
+tree_cv = DecisionTreeRegressor(max_depth=50, max_features=10, random_state=10)
+
+cv_results = cross_val_score(tree_cv, X_train, y_train, cv=5)
+print(cv_results)
+print(np.mean(cv_results))
 # %%
