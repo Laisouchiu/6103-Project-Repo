@@ -196,13 +196,14 @@ from statsmodels.stats.outliers_influence import variance_inflation_factor
 lm_model = ols(formula=' sale_price ~ C(borough) + C(building_class_category) + C(zip_code) + total_units + percent_residential_units + age + gross_square_feet + C(tax_class_at_time_of_sale) + C(building_class_at_time_of_sale)', data=clean_df)
 lm_model_fit = lm_model.fit()
 print(lm_model_fit.summary())
+#%% Linear Regression Assumptions
 # Normally bell shaped
 sns.histplot(data=clean_df, x='sale_price')
 # VIFs Checkings
 Xvifs = clean_df[['borough', 'building_class_category', 'zip_code', 'total_units', 
               'percent_residential_units', 'age', 'gross_square_feet', 
               'tax_class_at_time_of_sale', 'building_class_at_time_of_sale']]
-Xvif = Xvifs.drop(['building_class_category', 'building_class_at_time_of_sale'], axis=1)
+Xvif = Xvifs.drop(['building_class_category', 'building_class_at_time_of_sale', 'percent_residential_units', 'zip_code'], axis=1)
 vifs = pd.DataFrame()
 vifs["features"] = Xvif.columns
 vifs["VIF"] = [ variance_inflation_factor(Xvif.values, i) 
@@ -210,13 +211,22 @@ vifs["VIF"] = [ variance_inflation_factor(Xvif.values, i)
 print(vifs)
 # Linearity Checkings
 sns.lmplot(x = "total_units", y = "sale_price", data = clean_df[clean_df['total_units']<100], line_kws={'color':'red'} )
+plt.title("Total Units versus Sale Price")
+plt.xlabel("Total Units")
+plt.ylabel("Sale Price")
 plt.show()
 sns.lmplot(x = "age", y = "sale_price", data = clean_df[clean_df['age']<100], line_kws={'color':'red'})
+plt.title("Age versus Sale Price")
+plt.xlabel("Age (years)")
+plt.ylabel("Sale Price")
 plt.show()
 sns.lmplot(x = "gross_square_feet", y = "sale_price", data = clean_df[clean_df['gross_square_feet']<8000], line_kws={'color':'red'})
+plt.title("Gross Square Feet versus Sale Price")
+plt.xlabel("Gross Square Feet")
+plt.ylabel("Sale Price")
 plt.show()
-# Build the model with interactions terms again: 
-lm_model = ols(formula=' sale_price ~  C(building_class_category) + C(building_class_at_time_of_sale) + C(tax_class_at_time_of_sale) + C(borough) + age + total_units + gross_square_feet + age*C(building_class_category) + age + total_units*C(building_class_category)', data=clean_df)
+#%% Build the model with interactions terms again: 
+lm_model = ols(formula=' sale_price ~  age + total_units + gross_square_feet + C(borough) + C(tax_class_at_time_of_sale) + C(building_class_category) + C(building_class_at_time_of_sale) + age*C(building_class_category) + total_units*C(building_class_category)', data=clean_df)
 lm_model_fit = lm_model.fit()
 print(lm_model_fit.summary())
 # %% Decision Tree
