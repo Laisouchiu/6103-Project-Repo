@@ -197,7 +197,7 @@ print(f"Testing MSE: {mean_squared_error(y_test, lr.predict(X_test))}")
 print(f"Training MAE: {mean_absolute_error(y_train, lr.predict(X_train))}")
 print(f"Testing MAE: {mean_absolute_error(y_test, lr.predict(X_test))}")
 # %% Decision Tree
-dt = DecisionTreeRegressor(max_depth=10, min_samples_split=10)
+dt = DecisionTreeRegressor(max_depth=50, max_features=10, random_state=10)
 dt.fit(X_train, y_train)
 # R-squared
 print(f"Training R-Squared: {dt.score(X_train, y_train)}")
