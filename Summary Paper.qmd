@@ -191,7 +191,7 @@ The variables we don't use:
 We didn't use Neighborhood, block, lot and address because they have the similar information as zip_codes and borough, and we think zip_codes and borough can provide better information on location. 
 We didn't use land_square_feet because we decided to use gross_sqaure_feet as a better variable for measuring the area.
 ## Train/Test Split
-Before we run the 
+Before we starting to build the models, we need to split our cleaned dataframe into training set and testing set
 ```{python}
 data_sold_features = data_few_cols[["borough", "building_class_category", "zip_code", "total_units", "percent_residential_units", "age", "gross_square_feet", "tax_class_at_time_of_sale", "building_class_at_time_of_sale", "sale_price"]]
 dataPreprocessor = ColumnTransformer( transformers=
@@ -248,12 +248,10 @@ Thus, finally we concluded that, though we have some significant coefficients in
 ```{python}
 
 ```
-
 ## Random Forest
 ```{python}
 
 ```
-
 ## K-NN
 ```{python}
 
