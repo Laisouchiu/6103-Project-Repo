@@ -1,8 +1,17 @@
 ---
-title: "Untitled"
+title: "Team09 6103_Project"
 format: html
 ---
-# IMPORTING LIBRARIES
+# Research Topic
+We are analyzing a selling record dataset from the New York City property market, which includes annual selling records of single buildings or unit buildings from 2016 to 2017. 
+We are going to analyze the different factors present in our dataset to predict the sales price of the building in New York City. The aim of this project is to find relations and patterns of sales price w.r.t. various other factors to have a clear understanding of property price in NYC, and hopefully will help property companies or citizens that has interest in purchasing propert at New York to have a prospect for the NY property price trend in the future.
+
+# SMART Questions: 
+* What type(s) of location variable(s) (Eg. block, borough, neighborhood) will affect the selling price most? (can answer by modeling)
+* How is the sale price of commercial property different from the sale price of residential property?
+* How is accuracy different if different machine learning models like linear regression, logistic regression, and random forest are applied?
+
+# Importing Libraries
 ```{python}
 import numpy as np
 import pandas as pd
@@ -28,3 +37,60 @@ from sklearn.model_selection import train_test_split
 import statsmodels.api as sm
 ```
 
+# Importing Data
+We imported the data about New York properties and checked its basic information 
+```{python}
+data = pd.read_csv("Team9_data.csv")
+print(data.shape)
+print(data.info())
+```
+This dataset has 84,548 rows and 22 columns
+
+# Dataset Pre-Processing
+Before we do the EDA and build models for this dataset, we need to clean the data first
+## Columns manipulation
+### Change column's name
+We changed the columns name into lower capital for better visualization. 
+```{python}
+newcols = ["unnamed", "borough", "neighborhood", "building_class_category", "tax_class_at_present", "block", "lot", "easement", "building_class_at_present", "address", "apartment_number", "zip_code", "residential_units", "commercial_units", "total_units", "land_square_feet", "gross_square_feet", "year_built", "tax_class_at_time_of_sale", "building_class_at_time_of_sale", "sale_price", "sale_date"]
+data.columns = newcols
+data.info()
+```
+### Changing column's data type
+There are too many columns with unappropriate data type, so we need to convert them to the appropriate data type:
+1). We converted land and gross square feet, property sales price, the number of residential, commerical and total units into continous variable
+2). We converted variables that represent different locations like borough, neighborhood and zip code into categorical variable; we also converted variables represented different building categories, and different building tax categories into categorical variable
+```{python}
+numeric = ["residential_units","commercial_units","total_units", "land_square_feet" ,
+           "gross_square_feet","sale_price" ]
+for col in numeric: 
+    data[col] = pd.to_numeric(data[col], errors='coerce')
+
+categorical = ["borough","neighborhood",'building_class_category', 'tax_class_at_present',
+               'building_class_at_present','zip_code', 'building_class_at_time_of_sale', 'tax_class_at_time_of_sale']
+for col in categorical: 
+    data[col] = data[col].astype('category')
+```
+### Drop useless columns
+Based on the dataset information, we can see there's an ambiguous column called 'Unamed' that we don't know what it's describe for, so we decided to drop it first
+```{python}
+data = data.drop("unnamed", axis=1)
+```
+
+```{python}
+data_few_cols = data.drop(['apartment_number','building_class_at_present', 'tax_class_at_present'], axis=1)
+```
+### Creating Percent Reseidential Variable
+We found 
+```{python}
+data["percent_residential_units"] = data["residential_units"] / data["total_units"]
+# Three lines are greater than one - not possible is likely due to discrepencies in the data so we can drop those
+data= data.loc[data["percent_residential_units"] != 6]
+data= data.loc[data["percent_residential_units"] != 2]
+data= data.loc[data["percent_residential_units"] != 1.5]
+data['percent_residential_units'].value_counts()
+```
+## Dropping Null Values
+```{python}
+
+```
