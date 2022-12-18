@@ -91,9 +91,10 @@ data = data[data['year_built'] != 0]
 data['age'] = 2022 - data['year_built']
 ```
 ### Drop useless columns
-Based on the dataset information, we can see there's an ambiguous column called 'Unamed' that we don't know what it's describe for, so we decided to drop it first
+Based on the dataset information, we can see there's an ambiguous column called 'Unamed' that we don't know what it's describe for, and another useless column 'easement' for our analysis for sales price, so we decided to drop them first
 ```{python}
 data_few_cols = data.drop("unnamed", axis=1)
+data_few_cols = data_few_cols.drop("easement", axis=1)
 ```
 Because we created a new feature called "age", which is a better representation for the measure of a property's history, so we can delete the column 'year_built'
 ```{python}
@@ -153,9 +154,107 @@ def outliers_remove(df, list):
 
 clean_df = outliers_remove(data_few_cols, outliers_indexes)
 clean_df = clean_df.loc[clean_df["sale_price"] > 10]
-clean_df.shape
+print('Shape of our final cleaned dataframe is:', clean_df.shape)
+print('Basic info of our final cleand dataframe:\n', clean_df.info())
 ```
 
 
 
 # Exploratory Data Analysis (EDA)
+## Plot Sales Price After Outliers Removed
+```{python}
+plt.hist(clean_df.sale_price, bins = 30, edgecolor = "black")
+plt.title("Histogram of Sale Prices")
+plt.xlabel("Sale Price (Millions)")
+plt.ylabel("Frequency")
+plt.show()
+```
+## Correlation Matrix
+```{python}
+corr = clean_df.corr()
+ax = sns.heatmap(corr, cmap = 'Blues')
+plt.title("Correlation Matrix")
+plt.show()
+```
+
+
+
+# Model Building
+We are going to build 4 models for predicting the sales_price of New York property, which are:
+* Linear Regression
+* Decision Tree
+* Random Forest
+* K-NN
+The variables we are going to use are: 
+borough, building_class_category, zip_codes, total_units, percent_residential_units, age, gross_square_feet, tax_class_at_time_of_sale, building_class_at_time_of_sale, and sale_price as the response variable. 
+The variables we don't use: 
+We didn't use Neighborhood, block, lot and address because they have the similar information as zip_codes and borough, and we think zip_codes and borough can provide better information on location. 
+We didn't use land_square_feet because we decided to use gross_sqaure_feet as a better variable for measuring the area.
+## Train/Test Split
+Before we run the 
+```{python}
+data_sold_features = data_few_cols[["borough", "building_class_category", "zip_code", "total_units", "percent_residential_units", "age", "gross_square_feet", "tax_class_at_time_of_sale", "building_class_at_time_of_sale", "sale_price"]]
+dataPreprocessor = ColumnTransformer( transformers=
+    [
+        ("categorical", OneHotEncoder(), ["building_class_category", "tax_class_at_time_of_sale", 
+                                          "building_class_at_time_of_sale", "borough", "zip_code"
+                                          ])
+        #("numeric", StandardScaler(), ["total_units", "age", "sale_price", "gross_square_feet", "percent_residential_units"])
+    ], verbose_feature_names_out=False, remainder="passthrough",
+)
+
+data_sold_features_newmatrix = dataPreprocessor.fit_transform(data_sold_features)
+newcolnames = dataPreprocessor.get_feature_names_out()
+data_sold_features_new = pd.DataFrame( data_sold_features_newmatrix.toarray(), columns= newcolnames )
+
+
+X = data_sold_features_new.drop(["sale_price"], axis=1)
+y = data_sold_features_new['sale_price']
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.20, random_state=55)
+print(X_train.shape)
+print(X_test.shape)
+print(y_train.shape)
+print(y_test.shape)
+```
+## Linear Regression
+We build the linear regression with the regressors we mentioned above at first, then we got a fitting result with 48% R-Squared value, which is not a really bad score. However, we want to make sure this is a useful model (predicting useful results), so we also need to check the model assumptions
+* Normally shaped response: Because we defined two functions to remove the outliers for our response variable sale_price in the Pre-processing section and checked its distribution on the EDA section, which is approximately normally distributed so we don't have the problem of skewed response
+* Multicollinearity: We checked the VIF values for our regressors, and we found zip_code and percentage_residential_units have extremly high VIF values (about 176 and 89 subsequently), which means we have a serious problem of multicollinearity and this can make our model prediction useless, so we removed these two regressors and checked the VIF values again and finally get every VIF values in an acceptable range (below 10)
+* Linearity: We checked the scatter plot between the response variable sale_price and three continuous regressors in our model structure, which are total_units, Age, and  gross_square_feet. We found a clear linear relationship between property's sales price with total units and square footage, however, we can't see a clear linear relation between property's sales price and property's age. Thus firstly we decided to romove regressor Age, but this can't increase other evaluation values, instead, it dropped our R-Squared values about 2% down, so finally we decided to keep it
+After we finish these checkings we build our model again with the remaining regressors: age, total_units, gross_square_feet, borough, tax_class_at_time_of_sale, building_class_at_time_of_sale, and also added two more interaction terms 
+```{python}
+from statsmodels.formula.api import ols
+from statsmodels.stats.outliers_influence import variance_inflation_factor
+
+# Final model structure 
+lm_final = ols(formula=' sale_price ~  age + total_units + gross_square_feet + C(borough) + C(tax_class_at_time_of_sale) + C(building_class_category) + age:C(building_class_category) + total_units:C(building_class_category)', data=clean_df).fit()
+
+# Residual Plot
+ypred = lm_final.predict(clean_df)
+plt.plot(ypred, lm_final.resid, 'o')
+plt.axhline(y=0, color = 'red')
+plt.title("Plot of Residuals")
+plt.xlabel("Predicted Values")
+plt.ylabel("Residuals")
+plt.show() 
+```
+The residual plots for our final model looks acceptable
+```{python}
+print(lm_final.summary())
+```
+The final linear model R-Squared value has dropped to 19.8%, which is definetly not acceptable for predicting a marketing continuous data like property sales price. Moreover, we can't see the AIC and BIC change a lot compare with our previous model, which is also extremely high.
+Thus, finally we concluded that, though we have some significant coefficients in our fitting summary, the response variable sale_price can hardly explain with this model structure by using Linear Regression, and we will keep trying other types of models. 
+## Decision Tree
+```{python}
+
+```
+
+## Random Forest
+```{python}
+
+```
+
+## K-NN
+```{python}
+
+```
