@@ -158,4 +158,4 @@ clean_df.shape
 
 
 
-# EDA
+# Exploratory Data Analysis (EDA)
