@@ -243,7 +243,8 @@ The residual plots for our final model looks acceptable
 print(lm_final.summary())
 ```
 The final linear model R-Squared value has dropped to 19.8%, which is definetly not acceptable for predicting a marketing continuous data like property sales price. Moreover, we can't see the AIC and BIC change a lot compare with our previous model, which is also extremely high.
-Thus, finally we concluded that, though we have some significant coefficients in our fitting summary, the response variable sale_price can hardly explain with this model structure by using Linear Regression, and we will keep trying other types of models. 
+Thus, finally we concluded that: 
+* Though we have some significant coefficients in our fitting summary, the response variable sale_price can hardly explain with this model structure by using Linear Regression, and we will keep trying other types of models. 
 ## Decision Tree
 ```{python}
 
