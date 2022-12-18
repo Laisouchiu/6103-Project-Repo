@@ -160,15 +160,7 @@ print('Basic info of our final cleand dataframe:\n', clean_df.info())
 
 
 
-# Exploratory Data Analysis (EDA)
-## Plot Sales Price After Outliers Removed
-```{python}
-plt.hist(clean_df.sale_price, bins = 30, edgecolor = "black")
-plt.title("Histogram of Sale Prices")
-plt.xlabel("Sale Price (Millions)")
-plt.ylabel("Frequency")
-plt.show()
-```
+# Exploratory Data Analysis (EDA) & Visualization
 ## Correlation Matrix
 ```{python}
 corr = clean_df.corr()
@@ -177,6 +169,116 @@ plt.title("Correlation Matrix")
 plt.show()
 ```
 
+## Only plotting values less than $10 million due to significant outliers (eg. 2.2 BILLION dollars lol)
+```{python}
+plt.hist(data_few_cols.loc[data_few_cols["sale_price"] <= 10000000]["sale_price"], bins = 30, edgecolor = 'black')
+plt.xlabel("Sale Price (Millions)")
+plt.ylabel("Frequency")
+plt.title("Histogram of House Sale Prices")
+plt.show()
+```
+
+## Plot Sales Price After Outliers Removed
+```{python}
+plt.hist(clean_df.sale_price, bins = 30, edgecolor = "black")
+plt.title("Histogram of Sale Prices")
+plt.xlabel("Sale Price (Millions)")
+plt.ylabel("Frequency")
+plt.show()
+```
+much cleaner plot, although not exactly normal distribution but very close to normal distribution.
+##
+```{python}
+borough_map = {1: "Manhattan", 2: "Bronx", 3: "Brooklyn", 4: "Queens", 5:"Staten Island"}
+data_few_cols["borough"] = data_few_cols.borough.map(borough_map)
+data_borough = data_few_cols[["borough", "sale_price"]].groupby(["borough"]).mean()
+labels = data_borough.index.values
+values = data_borough['sale_price'].values
+data_borough
+```
+##
+```{python}
+plt.bar(labels, values, edgecolor = "black")
+# ax.set_xticklabels(("Manhattan", "Bronx", "Brooklyn", "Queens", "Staten Island"))
+plt.ylabel("Average Sale Price (Millions)")
+plt.xlabel("Borough")
+plt.title("Average Sale Price by Borough")
+plt.show()
+```
+From the plot, we can see that Manhattan property price is much higher than the other boroughs.
+##
+```{python}
+sns.violinplot(x = "borough", y = "sale_price", data = data_few_cols.loc[data_few_cols["sale_price"] <= 10000000])
+plt.title("Distribution of Sale Price by Borough")
+plt.xlabel("Borough")
+plt.ylabel("Sale Price")
+plt.show()
+```
+from the violinplot, we can see that Manhattan is much skinnier as compared to others but it stretches to higher sales price.
+skinny plot represents that there is no specific price range in which Manhattan properties are getting sold.
+rest all the boroughs are fatter in lower sales price region.
+## Plotting Square Footage for < 10k and those not equal to zero
+```{python}
+data_few_cols_gross = data_few_cols.loc[data_few_cols["gross_square_feet"] < 10000]
+data_few_cols_gross = data_few_cols_gross.loc[data_few_cols["gross_square_feet"] != 0]
+plt.hist(data_few_cols_gross["gross_square_feet"], bins = 30, edgecolor = "black")
+plt.xlabel("Gross Square Feet")
+plt.ylabel("Frequency")
+plt.title("Histogram of Gross Square Footage")
+plt.show()
+plot is right skewed indicating there are less values in upper end of the gross_square_feet.
+```
+## Square Footage and Sale Price
+```{python}
+data_few_cols_gross = data_few_cols_gross.loc[data_few_cols_gross["sale_price"] <= 20000000]
+sns.lmplot(x = "gross_square_feet", y = "sale_price", data = data_few_cols_gross, scatter_kws={"alpha": 0.2}, line_kws={'color': 'red'})
+plt.title("Square Footage versus Sale Price")
+plt.xlabel("Square Footage")
+plt.ylabel("Sale Price")
+plt.show()
+```
+the data points are very scattered are not aligning very well with the straight line.
+##
+```{python}
+sns.lmplot(x = "age", y = "sale_price", data = data_few_cols.loc[data_few_cols["sale_price"] <= 10000000], scatter_kws={'alpha': 0.2}, line_kws={'color': 'red'})
+plt.title("Age versus Sale Price")
+plt.xlabel("Age (years)")
+plt.ylabel("Sale Price")
+plt.show()
+```
+the data points are very scattered are not aligning very well with the straight line.
+##
+```{python}
+tax_class = data_few_cols[["sale_price", "tax_class_at_time_of_sale"]].groupby(["tax_class_at_time_of_sale"]).mean()
+labels = tax_class.index.values.astype(str)
+values = tax_class.sale_price.values
+tax_class
+```
+## Tax class = clearly a big predictor
+```{python}
+plt.bar(labels, values)
+plt.title("Sale Price by Tax Class")
+plt.xlabel("Tax Class")
+plt.ylabel("Sale Price")
+plt.show()
+```
+this plot gives valuable insights with respect to different tax classes. Properties with tax class 4 has the highest selling price.
+##
+```{python}
+data_low = data_few_cols.loc[data_few_cols["sale_price"] <= 10000000]
+sns.lmplot(x = "total_units", y = "sale_price", data = data_low.loc[data_low['total_units'] < 500])
+plt.ylim((0, 10000000))
+plt.show()
+```
+we can see that there is a linear relation of total_units but it is not very clear as there are a lot of outliers.
+## Distribution of Percent Residential Units - Not very informative but interesting as most buildings are 100% residential
+```{python}
+plt.hist(data_few_cols["percent_residential_units"], bins = 40, edgecolor = 'black')
+plt.title("Histogram of Percent of Residential Units")
+plt.xlabel("Percent Residential")
+plt.ylabel("Frequency")
+plt.show()
+```
 
 
 # Model Building
