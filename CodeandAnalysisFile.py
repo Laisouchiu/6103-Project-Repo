@@ -319,7 +319,8 @@ print(f"Training MAE: {mean_absolute_error(y_train, lr.predict(X_train))}")
 print(f"Testing MAE: {mean_absolute_error(y_test, lr.predict(X_test))}")
 
 # when we tried linear regression using sklearn, test score was very bad.
-# we just got a negative score
+# we got a negative score which indicates that our model performing worse than a constant model.
+
 #%% Linear Regression by Statsmodels: 
 from statsmodels.formula.api import ols
 from statsmodels.stats.outliers_influence import variance_inflation_factor
@@ -327,6 +328,10 @@ from statsmodels.stats.outliers_influence import variance_inflation_factor
 lm_model = ols(formula=' sale_price ~ C(borough) + C(building_class_category) + C(zip_code) + total_units + percent_residential_units + age + gross_square_feet + C(tax_class_at_time_of_sale) + C(building_class_at_time_of_sale)', data=clean_df)
 lm_model_fit = lm_model.fit()
 print(lm_model_fit.summary())
+
+# using the model above, Adjusted R squared value came out to be 0.476. Which is a huge improvement than the previous linear model using sklearn.
+# from the model summary we can also see that Pvalue of different building class categories are coming out to be very less which means these coefficients are significant.
+
 #%% Linear Regression Assumptions
 # Normally bell shaped
 sns.histplot(data=clean_df, x='sale_price')
@@ -381,6 +386,10 @@ print(f"Testing MSE: {mean_squared_error(y_test, dt.predict(X_test))}")
 # Mean Absolute Error
 print(f"Training MAE: {mean_absolute_error(y_train, dt.predict(X_train))}")
 print(f"Testing MAE: {mean_absolute_error(y_test, dt.predict(X_test))}")
+
+# when running a decisionTreeRegressor, we found out that the score was very less of just 2.2%
+
+
 # %%
 train = []
 test = []
@@ -397,6 +406,10 @@ plt.title("Accuracies at Different Tree Depths")
 plt.xlabel("Max Depth")
 plt.ylabel("R-Squared")
 plt.show()
+
+# on checking R squared value for different depths of tree, accuracy fluctuated a lot and not giving a pattern.
+# so no judgement can given by the decision tree regressor for our dataset.
+
 # %% Random Forest
 rf = RandomForestRegressor(max_depth=10, min_samples_split=10, random_state=10)
 rf.fit(X_train, y_train)
@@ -409,7 +422,12 @@ print(f"Testing MSE: {mean_squared_error(y_test, rf.predict(X_test))}")
 # Mean Absolute Error
 print(f"Training MAE: {mean_absolute_error(y_train, rf.predict(X_train))}")
 print(f"Testing MAE: {mean_absolute_error(y_test, rf.predict(X_test))}")
+
+# using randomForestRegressor, we can see that R_squared value is around 26%.
+# this is much better than decisionTreeRegressor but it is still not good enough.
 # %% Random Forest
+# so to check the different parameters for hyperparameter tuning, we used gridSearchCV approach
+
 from sklearn.model_selection import GridSearchCV
 param_grid = {
     "n_estimators":[100,200,300],
@@ -455,7 +473,12 @@ rf2.fit(X_train,y_train)
 
 print("Training score:",rf2.score(X_train, y_train))
 print("Testing score:",rf2.score(X_test, y_test))
+
+# We tried different models with different parameters,
+# Maximum accuracy we got was 28.9%.
 # %%
+# KNN
+# as per professor's suggestion, we tried KNN and it gave us much better results than other models.
 from sklearn.neighbors import KNeighborsRegressor
 
 acc_test = []
@@ -470,16 +493,21 @@ for k in range(4, 35):
     acc_train.append(score_knn_train)
     print("train Score", score_knn_train)
     print("\n")
+    
+    
 # %%
 plt.plot(np.arange(4,35), acc_test, label="Testing accuracy")
 plt.title("Score vs K value plot for test dataset")
 plt.xlabel("K value")
 plt.ylabel("score")
 
+# from the plot, R-squared score is negative initially and increasing with increasing K value.
+# at around 35% score, score values is getting saturated.
 # %%
 # Maximum score is acheived at k = 23
 knn_model = KNeighborsRegressor(23).fit(X_train, y_train)
 score_knn = knn_model.score(X_test, y_test)
 print("Score at k = 23: ",score_knn)
 
+# We got the maximum accuracy of around 37% at the k value of 23.
 # %%
