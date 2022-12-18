@@ -37,6 +37,8 @@ from sklearn.model_selection import train_test_split
 import statsmodels.api as sm
 ```
 
+
+
 # Importing Data
 We imported the data about New York properties and checked its basic information 
 ```{python}
@@ -45,6 +47,8 @@ print(data.shape)
 print(data.info())
 ```
 This dataset has 84,548 rows and 22 columns
+
+
 
 # Dataset Pre-Processing
 Before we do the EDA and build models for this dataset, we need to clean the data first
@@ -71,17 +75,8 @@ categorical = ["borough","neighborhood",'building_class_category', 'tax_class_at
 for col in categorical: 
     data[col] = data[col].astype('category')
 ```
-### Drop useless columns
-Based on the dataset information, we can see there's an ambiguous column called 'Unamed' that we don't know what it's describe for, so we decided to drop it first
-```{python}
-data = data.drop("unnamed", axis=1)
-```
-
-```{python}
-data_few_cols = data.drop(['apartment_number','building_class_at_present', 'tax_class_at_present'], axis=1)
-```
-### Creating Percent Reseidential Variable
-We found 
+### Creating some new features:
+We created a new column for percentage of residential units 
 ```{python}
 data["percent_residential_units"] = data["residential_units"] / data["total_units"]
 # Three lines are greater than one - not possible is likely due to discrepencies in the data so we can drop those
@@ -90,7 +85,77 @@ data= data.loc[data["percent_residential_units"] != 2]
 data= data.loc[data["percent_residential_units"] != 1.5]
 data['percent_residential_units'].value_counts()
 ```
-## Dropping Null Values
+We created another new column named 'age' by calcualting the difference between the current year and the year it built
 ```{python}
-
+data = data[data['year_built'] != 0]
+data['age'] = 2022 - data['year_built']
 ```
+### Drop useless columns
+Based on the dataset information, we can see there's an ambiguous column called 'Unamed' that we don't know what it's describe for, so we decided to drop it first
+```{python}
+data_few_cols = data.drop("unnamed", axis=1)
+```
+Because we created a new feature called "age", which is a better representation for the measure of a property's history, so we can delete the column 'year_built'
+```{python}
+data_few_cols = data_few_cols.drop(['year_built'], axis =1)
+```
+Lastly, we dropped some useless columns
+```{python}
+data_few_cols = data_few_cols.drop(['apartment_number','building_class_at_present', 'tax_class_at_present'], axis=1)
+```
+### Subseting out inappropriate values
+Dropping duplicates
+```{python}
+data_few_cols.drop_duplicates(keep = "last", inplace=True)
+```
+Removing data where commercial + residential doesn't equal total units
+```{python}
+data_few_cols = data_few_cols[data_few_cols['total_units'] == data_few_cols['commercial_units'] + data_few_cols['residential_units']]
+```
+Removing rows with TOTAL UNITS == 0 and one outlier with 2261 units
+```{python}
+data_few_cols = data_few_cols[(data_few_cols['total_units'] > 0) & (data_few_cols['total_units'] != 2261)]
+```
+Removing 0 sqaure foot units
+```{python}
+data_few_cols = data_few_cols[data_few_cols["land_square_feet"] != 0]
+data_few_cols = data_few_cols[data_few_cols["gross_square_feet"] != 0]
+```
+## Dropping Null Values
+After we finish the column manipulation, convert columns into appropriate data type, drop useless columns and create some new features, then we can drop the null or missing values in the whole dataset. 
+```{python}
+data_few_cols = data_few_cols.dropna()
+```
+## Removing Outliers
+Define a function for detecting outliers, of which setting our outliers quantile below 25% and over 75%
+```{python}
+outliers_indexes = []
+def outliers (df, ft):
+    q1=df[ft].quantile(0.25)
+    q3=df[ft].quantile(0.75)
+    iqr=q3-q1
+    
+    lower_bound=q1-1.5*iqr
+    upper_bound=q3+1.5*iqr
+    
+    outliers=df.index[ (df[ft]<lower_bound) | (df[ft]>upper_bound)]
+    return outliers
+
+outliers_indexes.extend(outliers(data_few_cols, 'sale_price'))
+print('Number of outliers:', len(outliers_indexes))
+```
+Define another function for removing ourliers for dataframe
+```{python}
+def outliers_remove(df, list):
+    list = sorted(set(list)) 
+    df_clean = df.drop(list)
+    return df_clean
+
+clean_df = outliers_remove(data_few_cols, outliers_indexes)
+clean_df = clean_df.loc[clean_df["sale_price"] > 10]
+clean_df.shape
+```
+
+
+
+# EDA
