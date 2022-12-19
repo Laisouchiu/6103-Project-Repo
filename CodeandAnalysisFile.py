@@ -388,7 +388,12 @@ print(f"Training MAE: {mean_absolute_error(y_train, dt.predict(X_train))}")
 print(f"Testing MAE: {mean_absolute_error(y_test, dt.predict(X_test))}")
 
 # when running a decisionTreeRegressor, we found out that the score was very less of just 2.2%
+#%%
+tree_cv = DecisionTreeRegressor(max_depth=50, max_features=10, random_state=10)
 
+cv_results = cross_val_score(tree_cv, X_train, y_train, cv=5)
+print(cv_results)
+print(np.mean(cv_results))
 
 # %%
 train = []
@@ -460,13 +465,6 @@ full_cv = RandomForestRegressor(max_depth=50, max_features=10, n_estimators=200,
 cv_results = cross_val_score(full_cv, X_train, y_train, cv = 5)
 print(cv_results)
 
-#%%
-# Decision Tree
-tree_cv = DecisionTreeRegressor(max_depth=50, max_features=10, random_state=10)
-
-cv_results = cross_val_score(tree_cv, X_train, y_train, cv=5)
-print(cv_results)
-print(np.mean(cv_results))
 #%%
 rf2 = RandomForestRegressor(max_depth=10, max_features=10,random_state = 10)
 rf2.fit(X_train,y_train)
