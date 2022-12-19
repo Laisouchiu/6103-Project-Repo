@@ -1,6 +1,8 @@
 ---
 title: "Property Sales Price Prediction"
 author: Team 9
+execute:
+    echo: false
 format: html
 ---
 # Research Topic
