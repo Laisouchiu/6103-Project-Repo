@@ -453,6 +453,26 @@ print("Testing score:",rf.score(X_test, y_test))
 
 We got the score of around 29% which is not good enough for sales price prediction but it is better than the previous techniques.\
 
+### Plotting Variable Importance Plot
+
+```{python}
+import numpy as np
+ 
+importances = rf.feature_importances_
+number_to_keep = 10
+std = np.std([tree.feature_importances_ for tree in rf.estimators_], axis=0)
+indices = np.argsort(importances)[::-1][:number_to_keep]
+
+plt.figure(figsize=(20,10))
+plt.title("Feature importances")
+plt.bar(range(len(indices)), importances[indices], color="r", yerr=std[indices], align="center")
+plt.xticks(range(len(indices)), X_train.columns[indices], rotation=30, size=15)
+plt.xlim([-1, len(indices)])
+plt.show()
+```
+
+* From the feature importance plot, we can see that as per the random forest model, gross_square_feet, particular zip code classes and total_units have a very strong impact on the overall score.
+
 ## K-Nearest Neighbor
 As per professor's feedback on our presentation, we tried K-Nearest Neighbor algorithm.\
 Since, real estate brokers, agents, and people who want to buy a property knowingly or unknowingly follow K-NN approach to find the best property for them.\
@@ -492,13 +512,13 @@ print("Score at k = 23: ",score_knn)
 * We got the maximum score of around 37% at the k value of 23.
 
 # CONCLUSION
-This project has shown various aspects of predicting the sale price of real estate in New York City. Overall, it proved difficult for us to develop a strong and reliable model to predict sale price. We encountered many challenges in our data, such as missing data points and skewed data. However, we managed make the following conclusions:
+This project has shown various aspects of predicting the sale price of real estate in New York City. Overall, it proved difficult for us to develop a strong and reliable model to predict sale price. We encountered many challenges in our data, such as missing data points and skewed data. However, we managed to make the following conclusions:
 
 * Sales price was highly dependent on location type variables like boroughs.\
 * Sales price was highly dependent on the gross_square_feet of the property.\
 * Sales price was highly dependent on the tax class of the property.\
 * Different models like linear regression, decision tree, random forest, and KNN gave different R squared score.\
-* K-Nearest Neighbor performed best on our dataset with an score of 37%.\
+* K-Nearest Neighbor performed best on our dataset with a score of 37%.\
 
 It is important to note that this data is only from a one-year period about five years ago. It would be interesting to see how these models would work using more recent data. The New York City real estate market is very lucrative, especially since the COVID-19 pandemic. Seeing how this has changed would be interesting to investigate. Finally, this data is only for New York City, and our results would likely vary if we used similar methods on data from other cities, such as DC. \
 Despite the challenges we encountered, our analysis provided us with interesting information about the real estate market in New York City, which allowed us to gain insight into what factors affect the market the most.\

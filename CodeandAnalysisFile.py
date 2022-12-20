@@ -474,6 +474,22 @@ print("Testing score:",rf2.score(X_test, y_test))
 
 # We tried different models with different parameters,
 # Maximum accuracy we got was 28.9%.
+#%%
+import numpy as np
+ 
+importances = rf2.feature_importances_
+number_to_keep = 10
+std = np.std([tree.feature_importances_ for tree in rf2.estimators_], axis=0)
+indices = np.argsort(importances)[::-1][:number_to_keep]
+
+plt.figure(figsize=(20,10))
+plt.title("Feature importances")
+plt.bar(range(len(indices)), importances[indices], color="r", yerr=std[indices], align="center")
+plt.xticks(range(len(indices)), X_train.columns[indices], rotation=30, size=15)
+plt.xlim([-1, len(indices)])
+plt.show()
+
+# from the feature importance plot, we can see that as per the random forest model, gross_square_feet, particular zip code classes and total_units have a very strong impact on the overall score.
 # %%
 # KNN
 # as per professor's suggestion, we tried KNN and it gave us much better results than other models.
